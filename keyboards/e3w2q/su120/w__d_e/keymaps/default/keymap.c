@@ -81,13 +81,14 @@ const key_override_t **key_overrides = (const key_override_t *[]){
 enum custom_keycodes {
   QWERTY = SAFE_RANGE,
   LOWER,
+  MHENK,
   AT_TB,
   AT_TS,
   AT_PW,
 };
 
 static bool is_timer = false;
-static bool is_func = false;
+static bool is_not_pressed_key = false;
 
 #define _QWERTY 0
 #define _LOWER 1
@@ -105,7 +106,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_EQL,  KC_BSLS, \
     KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_QUOT, \
-    KC_LGUI, KC_LALT, KC_HENK,          KC_MHEN, KC_SPC,  LOWER,                     KC_LBRC, KC_RBRC, KC_APP   \
+    KC_LGUI, KC_LALT, KC_HENK,          MHENK,   KC_SPC,  LOWER,                     KC_LBRC, KC_RBRC, KC_APP   \
   ),
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
@@ -168,14 +169,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case LOWER:
       if (record->event.pressed) {
-        is_func = true;
+        is_not_pressed_key = true;
         layer_on(_LOWER);
       } else {
-        if (is_func) {
+        if (is_not_pressed_key) {
           tap_code(KC_HENK);
         }
-        is_func = false;
+        is_not_pressed_key = false;
         layer_off(_LOWER);
+      }
+      break;
+
+    case MHENK:
+      if (record->event.pressed) {
+        is_not_pressed_key = true;
+        register_code(KC_LSFT);
+      } else {
+        unregister_code(KC_LSFT);
+        if (is_not_pressed_key) {
+          tap_code(KC_MHEN);
+        }
+        is_not_pressed_key = false;
       }
       break;
 
@@ -200,7 +214,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
     default:
       if (record->event.pressed) {
-        is_func = false;
+        is_not_pressed_key = false;
       }
       break;
   }
