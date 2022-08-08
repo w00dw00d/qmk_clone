@@ -54,6 +54,15 @@ const key_override_t quot_key_override = ko_make_with_layers_and_negmods(0, KC_Q
 const key_override_t bsls_key_override = ko_make_with_layers_and_negmods(0, KC_BSLS, JP_BSLS, ~0, (uint8_t) MOD_MASK_SHIFT);
 const key_override_t grv_key_override = ko_make_with_layers_and_negmods(0, KC_GRV, JP_GRV, ~0, (uint8_t) MOD_MASK_SHIFT);
 
+const key_override_t at2_key_override = ko_make_with_layers_and_negmods(0, KC_AT,   JP_AT, ~0, (uint8_t) MOD_MASK_SHIFT);
+const key_override_t cc2_key_override = ko_make_with_layers_and_negmods(0, KC_CIRC, JP_CIRC, ~0, (uint8_t) MOD_MASK_SHIFT);
+
+const key_override_t ap2_key_override = ko_make_with_layers_and_negmods(0, KC_AMPR, JP_AMPR, ~0, (uint8_t) MOD_MASK_SHIFT);
+const key_override_t as2_key_override = ko_make_with_layers_and_negmods(0, KC_ASTR, JP_ASTR, ~0, (uint8_t) MOD_MASK_SHIFT);
+const key_override_t lp2_key_override = ko_make_with_layers_and_negmods(0, KC_LPRN, JP_LPRN, ~0, (uint8_t) MOD_MASK_SHIFT);
+const key_override_t rp2_key_override = ko_make_with_layers_and_negmods(0, KC_RPRN, JP_RPRN, ~0, (uint8_t) MOD_MASK_SHIFT);
+const key_override_t ud2_key_override = ko_make_with_layers_and_negmods(0, KC_UNDS, JP_UNDS, ~0, (uint8_t) MOD_MASK_SHIFT);
+
 const key_override_t **key_overrides = (const key_override_t *[]){
   &at_key_override,
   &circ_key_override,
@@ -75,12 +84,20 @@ const key_override_t **key_overrides = (const key_override_t *[]){
   &quot_key_override,
   &bsls_key_override,
   &grv_key_override,
+  &at2_key_override,
+  &cc2_key_override,
+  &ap2_key_override,
+  &as2_key_override,
+  &lp2_key_override,
+  &rp2_key_override,
+  &ud2_key_override,
   NULL
 };
 
 enum custom_keycodes {
   QWERTY = SAFE_RANGE,
   LOWER,
+  RAISE,
   AT_TS,
   AT_PW,
   SP_SF,
@@ -91,16 +108,17 @@ enum custom_keycodes {
 
 static bool is_timer = false;
 static bool is_not_pressed_key = false;
-static bool is_sp_hk_pressed = false;
-static bool is_sp_hf_pressed = false;
+static bool is_lower_pressed = false;
+static bool is_raise_pressed = false;
 
 #define _QWERTY 0
 #define _LOWER 1
-// #define _RAISE 2
+#define _RAISE 2
+#define _CENTER 3
 
 // #define ZH_TG A(JP_ZKHK)
 #define MO_LO MO(_LOWER)
-// #define MO_RA MO(_RAISE)
+#define MO_RA MO(_RAISE)
 
 // #define CL_PU C(KC_PGUP)
 // #define CL_PD C(KC_PGDN)
@@ -111,14 +129,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_EQL,  KC_BSLS, \
     KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_QUOT, \
-    KC_LGUI, KC_LALT, SP_AT,            SP_SF,   KC_SPC,  MO_LO,                     KC_LBRC, KC_RBRC, KC_APP   \
+    KC_LGUI, KC_LALT, SP_AT,            MO_RA,   KC_SPC,  MO_LO,                     KC_LBRC, KC_RBRC, KC_APP   \
   ),
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
-    KC_INS,  _______, _______, _______, _______, _______, _______, _______, KC_UP,   KC_PGUP, KC_PGDN, _______, KC_GRV, \
+    KC_INS,  _______, _______, _______, _______, _______, _______, _______, KC_UP,   _______, _______, _______, KC_GRV, \
     _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_BSPC, \
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
-    _______, _______, _______,          SP_HK,   KC_DEL,  _______,                   AT_TS,   AT_PW,   S(KC_CAPS)  \
+    _______, _______, _______,          _______, KC_DEL,  _______,                   AT_TS,   AT_PW,   S(KC_CAPS)  \
+  ),
+  [_RAISE] = LAYOUT(
+    _______, JP_EXLM, KC_AT,   JP_HASH, JP_DLR,  JP_PERC, KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_UNDS, KC_BSPC, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______,          _______, _______, _______,                   _______, _______, _______  \
+  ),
+  [_CENTER] = LAYOUT(
+    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
+    _______, _______, _______, _______, _______, _______, _______, _______, KC_PGUP, _______, _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_PGDN, KC_END,  _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______,          _______, _______, _______,                   _______, _______, _______  \
   ),
 };
 
@@ -177,15 +209,14 @@ void matrix_scan_user(void) {
   }
 }
 
+layer_state_t layer_state_set_user(layer_state_t state) {
+  state = update_tri_layer_state(state, _RAISE, _LOWER, _CENTER);
+  return state;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case SP_AT:
-      if (record->event.pressed) {
-        tap_code(KC_MHEN);
-        tap_code(JP_AT);
-      }
-      is_not_pressed_key = false;
-      break;
+
 
     case SP_MW:
       if (record->event.pressed) {
@@ -197,84 +228,29 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       is_not_pressed_key = false;
       break;
 
-    case SP_SF:
+    case MO_RA:
       if (record->event.pressed) {
         is_not_pressed_key = true;
-        is_sp_hf_pressed = true;
+        is_raise_pressed = true;
         tap_code(KC_MHEN);
-        register_code(KC_RSFT);
       } else {
-        unregister_code(KC_RSFT);
-        // if (is_not_pressed_key) {
-        //   tap_code(KC_MHEN);
-        // }
-        is_sp_hf_pressed = false;
-        is_not_pressed_key = false;
-      }
-      break;
-
-    case SP_HK:
-      if (record->event.pressed) {
-        is_not_pressed_key = true;
-        is_sp_hk_pressed = true;
-      } else {
-        if (is_not_pressed_key) {
+        if (is_not_pressed_key && is_lower_pressed) {
           tap_code(KC_HENK);
         }
-        is_sp_hk_pressed = false;
+        is_raise_pressed = false;
         is_not_pressed_key = false;
       }
       break;
 
-    case KC_SPC:
-      if (! is_sp_hf_pressed) {
-        break;
-      }
+    case MO_LO:
       if (record->event.pressed) {
-        tap_code(KC_BSPC);
+        is_not_pressed_key = true;
+        is_lower_pressed = true;
+      } else {
+        is_lower_pressed = false;
         is_not_pressed_key = false;
-        return false;
       }
-
-    case KC_LEFT:
-      if (! is_sp_hk_pressed) {
-        break;
-      }
-      if (record->event.pressed) {
-        tap_code(KC_HOME);
-        is_not_pressed_key = false;
-        return false;
-      }
-
-    case KC_RGHT:
-      if (! is_sp_hk_pressed) {
-        break;
-      }
-      if (record->event.pressed) {
-        tap_code(KC_END);
-        is_not_pressed_key = false;
-        return false;
-      }
-
-    case KC_UP:
-      if (! is_sp_hk_pressed) {
-        break;
-      }
-      if (record->event.pressed) {
-        tap_code(KC_PGUP);
-        is_not_pressed_key = false;
-        return false;
-      }
-
-    case KC_DOWN:
-      if (! is_sp_hk_pressed) {
-        break;
-      }
-      if (record->event.pressed) {
-        tap_code(KC_PGDN);
-        is_not_pressed_key = false;
-        return false;
-      }
+      break;
 
     case KC_LCTL:
       if (record->event.pressed) {
