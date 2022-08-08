@@ -92,6 +92,7 @@ enum custom_keycodes {
 static bool is_timer = false;
 static bool is_not_pressed_key = false;
 static bool is_sp_hk_pressed = false;
+static bool is_sp_hf_pressed = false;
 
 #define _QWERTY 0
 #define _LOWER 1
@@ -115,9 +116,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
     KC_INS,  _______, _______, _______, _______, _______, _______, _______, KC_UP,   KC_PGUP, KC_PGDN, _______, KC_GRV, \
-    _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, \
+    _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_BSPC, \
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
-    _______, _______, _______,          SP_HK,   KC_DEL,  _______,                   AT_TS,   AT_PW,   _______  \
+    _______, _______, _______,          SP_HK,   KC_DEL,  _______,                   AT_TS,   AT_PW,   S(KC_CAPS)  \
   ),
 };
 
@@ -153,9 +154,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 void keyboard_post_init_user(void) {
   // Enable the LED layers
-/*   rgblight_reload_from_eeprom();
-  rgblight_disable_noeeprom(); */
+  // rgblight_enable_noeeprom(); // Enables RGB, without saving settings
+  // rgblight_sethsv_noeeprom(HSV_ORANGE);
+  // rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
   //key_override_on();
+
+
+  // sethsv(HSV_WHITE, (LED_TYPE *)&led[0]); // led 0
+  // sethsv(HSV_RED,   (LED_TYPE *)&led[1]); // led 1
+  // sethsv(HSV_GREEN, (LED_TYPE *)&led[2]); // led 2
+  // rgblight_set();
 }
 
 void jamming(void) {
@@ -192,12 +200,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case SP_SF:
       if (record->event.pressed) {
         is_not_pressed_key = true;
+        is_sp_hf_pressed = true;
+        tap_code(KC_MHEN);
         register_code(KC_RSFT);
       } else {
         unregister_code(KC_RSFT);
-        if (is_not_pressed_key) {
-          tap_code(KC_MHEN);
-        }
+        // if (is_not_pressed_key) {
+        //   tap_code(KC_MHEN);
+        // }
+        is_sp_hf_pressed = false;
         is_not_pressed_key = false;
       }
       break;
@@ -214,6 +225,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         is_not_pressed_key = false;
       }
       break;
+
+    case KC_SPC:
+      if (! is_sp_hf_pressed) {
+        break;
+      }
+      if (record->event.pressed) {
+        tap_code(KC_BSPC);
+        is_not_pressed_key = false;
+        return false;
+      }
 
     case KC_LEFT:
       if (! is_sp_hk_pressed) {
