@@ -86,7 +86,6 @@ enum custom_keycodes {
   SP_SF,
   SP_HK,
   SP_MW,
-  SP_AT,
 };
 
 static bool is_timer = false;
@@ -111,14 +110,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_EQL,  KC_BSLS, \
     KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_QUOT, \
-    KC_LGUI, KC_LALT, SP_AT,            SP_SF,   KC_SPC,  MO_LO,                     KC_LBRC, KC_RBRC, KC_APP   \
+    KC_LGUI, KC_LALT, KC_APP,           SP_SF,   KC_SPC,  MO_LO,                     KC_LBRC, KC_RBRC, XXXXXXX  \
   ),
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
     KC_INS,  _______, _______, _______, _______, _______, _______, _______, KC_UP,   KC_PGUP, KC_PGDN, _______, KC_GRV, \
     _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_BSPC, \
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
-    _______, _______, _______,          SP_HK,   KC_DEL,  _______,                   AT_TS,   AT_PW,   S(KC_CAPS)  \
+    _______, _______, S(KC_CAPS),       SP_HK,   KC_DEL,  _______,                   AT_TS,   AT_PW,   XXXXXXX  \
   ),
 };
 
@@ -179,13 +178,6 @@ void matrix_scan_user(void) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case SP_AT:
-      if (record->event.pressed) {
-        tap_code(KC_MHEN);
-        tap_code(JP_AT);
-      }
-      is_not_pressed_key = false;
-      break;
 
     case SP_MW:
       if (record->event.pressed) {
