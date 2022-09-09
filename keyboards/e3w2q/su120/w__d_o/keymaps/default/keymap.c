@@ -15,6 +15,11 @@
  */
 #include QMK_KEYBOARD_H
 #include "keymap_jp.h"
+
+#ifdef RGBLIGHT_ENABLE
+#include "rgblight.h"
+extern rgblight_config_t rgblight_config;
+#endif
 /*
 参考URL
 # 概要
@@ -31,6 +36,33 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/feature_key_overrides.md
 https://github.com/qmk/qmk_firmware/blob/master/docs/feature_auto_shift.md
 */
 
+const rgblight_segment_t PROGMEM rgb_default_layer[] = RGBLIGHT_LAYER_SEGMENTS(
+    {0, 57, HSV_WHITE}
+/*
+    {0, 57, HSV_BLUE}, 
+    {11, 1, HSV_PURPLE},
+    {48, 9, HSV_PURPLE}
+*/
+);
+
+const rgblight_segment_t PROGMEM rgb_lower_layer[] = RGBLIGHT_LAYER_SEGMENTS(
+    {0, 57, HSV_OFF}, 
+    {0, 11, HSV_PURPLE},
+    {22, 1, HSV_PURPLE},
+    {31, 1, HSV_PURPLE},
+    {20, 1, HSV_PURPLE},
+    {26, 3, HSV_PURPLE},
+    {51, 3, HSV_PURPLE},
+    {54, 1, HSV_PURPLE},
+    {56, 1, HSV_PURPLE},
+    {49, 2, HSV_BLUE},
+    {11, 1, HSV_RED}
+);
+
+const rgblight_segment_t* const PROGMEM rgb_layers[] = RGBLIGHT_LAYERS_LIST(
+    rgb_default_layer,
+    rgb_lower_layer
+);
 
 const key_override_t at_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_2, JP_AT);
 const key_override_t circ_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_6, JP_CIRC);
@@ -105,21 +137,21 @@ static uint16_t sp_sf_pressed_time = 0;
 
 // #define CL_PU C(KC_PGUP)
 // #define CL_PD C(KC_PGDN)
-// KC_MHEN KC_HENK
+// KC_MHEN KC_HENK KC_APP
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_QWERTY] = LAYOUT(
-    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_BSPC, \
-    KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_EQL,  KC_BSPC, \
+    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, \
+    KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC, \
     KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
-    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_QUOT, \
-    KC_LGUI, KC_LALT, KC_APP,           SP_SF,   KC_SPC,  MO_LO,                     KC_LBRC, KC_RBRC, KC_BSLS  \
+    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
+    KC_LGUI, KC_LALT, KC_EQL,           SP_SF,   KC_SPC,           MO_LO,            KC_LBRC, KC_RBRC, KC_QUOT  \
   ),
   [_LOWER] = LAYOUT(
-    RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
-    KC_INS,  _______, _______, _______, _______, _______, _______, _______, KC_UP,   _______, _______, _______, KC_GRV, \
+    RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  \
+    KC_INS,  _______, _______, _______, _______, _______, _______, _______, KC_UP,   _______, KC_F12,  KC_BSLS, \
     _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_BSPC, \
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
-    _______, _______, S(KC_CAPS),       SP_HK,   KC_DEL,  _______,                   AT_TS,   AT_PW,   XXXXXXX  \
+    RGB_TOG, _______, S(KC_CAPS),       SP_HK,   KC_DEL,           _______,          AT_TS,   AT_PW,   XXXXXXX  \
   ),
 };
 
@@ -153,18 +185,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //   COMBO(combo_del, KC_DEL)
 // };
 
+layer_state_t layer_state_set_user(layer_state_t state) {
+    rgblight_set_layer_state(0, layer_state_cmp(state, _QWERTY));
+    rgblight_set_layer_state(1, layer_state_cmp(state, _LOWER));
+    return state;
+}
+
 void keyboard_post_init_user(void) {
   // Enable the LED layers
-  // rgblight_enable_noeeprom(); // Enables RGB, without saving settings
-  // rgblight_sethsv_noeeprom(HSV_ORANGE);
-  // rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
-  //key_override_on();
+  rgblight_enable_noeeprom(); // Enables RGB, without saving settings
+  rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
 
-
+  rgblight_layers = rgb_layers;
+    
   // sethsv(HSV_WHITE, (LED_TYPE *)&led[0]); // led 0
-  // sethsv(HSV_RED,   (LED_TYPE *)&led[1]); // led 1
-  // sethsv(HSV_GREEN, (LED_TYPE *)&led[2]); // led 2
-  // rgblight_set();
+  rgblight_set();
+
+  rgblight_disable();
 }
 
 void jamming(void) {
@@ -180,6 +217,30 @@ void matrix_scan_user(void) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
+
+    // case KC_LSFT:
+    //   if (record->event.pressed) {
+    //     is_not_pressed_key = true;
+    //   } else {
+    //     if (is_not_pressed_key) {
+    //       unregister_code(KC_LSFT);
+    //       tap_code(KC_MHEN);
+    //     }
+    //     is_not_pressed_key = false;
+    //   }
+    //   break;
+
+    // case KC_RSFT:
+    //   if (record->event.pressed) {
+    //     is_not_pressed_key = true;
+    //   } else {
+    //     if (is_not_pressed_key) {
+    //       unregister_code(KC_RSFT);
+    //       tap_code(KC_HENK);
+    //     }
+    //     is_not_pressed_key = false;
+    //   }
+    //   break;
 
     case SP_MW:
       if (record->event.pressed) {
@@ -290,9 +351,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     case AT_PW:
       if (record->event.pressed) {
-        SEND_STRING("Ep");
+        SEND_STRING("empty");
         tap_code(JP_AT);
-        SEND_STRING("rkUsers37");
+        SEND_STRING("empty");
       }
       break;
 
