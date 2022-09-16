@@ -126,6 +126,8 @@ static bool is_sp_hk_pressed = false;
 static bool is_sp_sf_pressed = false;
 static uint16_t sp_hk_pressed_time = 0;
 static uint16_t sp_sf_pressed_time = 0;
+static uint16_t l_sh_pressed_time = 0;
+static uint16_t r_sh_pressed_time = 0;
 
 #define _QWERTY 0
 #define _LOWER 1
@@ -149,7 +151,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  \
     KC_INS,  _______, _______, _______, _______, _______, _______, _______, KC_UP,   _______, KC_F12,  KC_BSLS, \
-    _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_BSPC, \
+    _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, KC_BSPC, \
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
     RGB_TOG, _______, S(KC_CAPS),       SP_HK,   KC_DEL,           _______,          AT_TS,   AT_PW,   XXXXXXX  \
   ),
@@ -218,29 +220,25 @@ void matrix_scan_user(void) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
 
-    // case KC_LSFT:
-    //   if (record->event.pressed) {
-    //     is_not_pressed_key = true;
-    //   } else {
-    //     if (is_not_pressed_key) {
-    //       unregister_code(KC_LSFT);
-    //       tap_code(KC_MHEN);
-    //     }
-    //     is_not_pressed_key = false;
-    //   }
-    //   break;
+    case KC_LSFT:
+      if (record->event.pressed) {
+        if (TIMER_DIFF_16(record->event.time, l_sh_pressed_time) < TAPPING_TERM + 100) {
+          unregister_code(KC_LSFT);
+          tap_code(KC_MHEN);
+        }
+        l_sh_pressed_time = record->event.time;
+      }
+      break;
 
-    // case KC_RSFT:
-    //   if (record->event.pressed) {
-    //     is_not_pressed_key = true;
-    //   } else {
-    //     if (is_not_pressed_key) {
-    //       unregister_code(KC_RSFT);
-    //       tap_code(KC_HENK);
-    //     }
-    //     is_not_pressed_key = false;
-    //   }
-    //   break;
+    case KC_RSFT:
+      if (record->event.pressed) {
+        if (TIMER_DIFF_16(record->event.time, r_sh_pressed_time) < TAPPING_TERM + 100) {
+          unregister_code(KC_RSFT);
+          tap_code(KC_HENK);
+        }
+        r_sh_pressed_time = record->event.time;
+      }
+      break;
 
     case SP_MW:
       if (record->event.pressed) {
@@ -256,11 +254,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if (record->event.pressed) {
         is_not_pressed_key = true;
         is_sp_sf_pressed = true;
-        if (TIMER_DIFF_16(record->event.time, sp_sf_pressed_time) < TAPPING_TERM + 100) {
-          tap_code(KC_HENK);
-        } else {
+        // if (TIMER_DIFF_16(record->event.time, sp_sf_pressed_time) < TAPPING_TERM + 100) {
+        //   tap_code(KC_HENK);
+        // } else {
           tap_code(KC_MHEN);
-        }
+        //}
         register_code(KC_RSFT);
         sp_sf_pressed_time = record->event.time;
       } else {
