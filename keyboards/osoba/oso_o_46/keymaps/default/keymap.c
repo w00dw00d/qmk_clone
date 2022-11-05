@@ -82,7 +82,7 @@ const uint16_t auto_shift_map_cnt = 6;
 uint16_t auto_shift_map[6][2] = {
    {KC_0, JP_UNDS}
   ,{KC_SCLN, JP_COLN}
-  ,{KC_NUHS, JP_ASTR}
+  ,{KC_QUOT, JP_ASTR}
   ,{KC_GRV, JP_CIRC}
   ,{KC_NUBS, JP_SLSH}
   ,{KC_BSLS, JP_PIPE}
@@ -90,7 +90,7 @@ uint16_t auto_shift_map[6][2] = {
 
 const uint16_t conv_jis_map_cnt = 4;
 uint16_t conv_jis_map[4][2] = {
-   {KC_NUHS, JP_PLUS}
+   {KC_QUOT, JP_PLUS}
   ,{KC_GRV, JP_EQL}
   ,{KC_NUBS, JP_MINS}
   ,{KC_BSLS, JP_YEN}
@@ -98,6 +98,7 @@ uint16_t conv_jis_map[4][2] = {
 
 enum custom_keycodes {
   QWERTY = SAFE_RANGE,
+  QWERTY_M,
   LOWER,
   AT_TS,
   AT_PW,
@@ -113,16 +114,20 @@ static bool is_sp_sf_pressed = false;
 static uint16_t sp_hk_pressed_time = 0;
 static uint16_t sp_sf_pressed_time = 0;
 static uint16_t l_sh_pressed_time = 0;
-static uint16_t r_sh_pressed_time = 0;
+//static uint16_t r_sh_pressed_time = 0;
+static bool current_is_pc = true;
 
 #define _QWERTY 0
-#define _LOWER 1
-// #define _RAISE 2
+#define _QWERTY_M 1
+#define _LOWER 2
+// #define _RAISE 3
 
 // #define ZH_TG A(JP_ZKHK)
 #define MO_LO MO(_LOWER)
 // #define MO_RA MO(_RAISE)
 #define SC_CAPS S(KC_CAPS)
+#define DF_PC DF(_QWERTY)
+#define DF_MC DF(_QWERTY_M)
 
 // #define CL_PU C(KC_PGUP)
 // #define CL_PD C(KC_PGDN)
@@ -135,12 +140,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
     KC_APP,  KC_LGUI, KC_LALT,          SP_SF,   KC_SPC,  KC_BSPC, MO_LO,            KC_RALT, KC_RGUI, KC_DEL  \
   ),
+  [_QWERTY_M] = LAYOUT(
+    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    JP_CIRC, \
+    KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    JP_MINS, \
+    KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
+    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
+    KC_APP,  KC_LALT, KC_LGUI,          SP_SF,   KC_SPC,  KC_BSPC, MO_LO,            KC_RGUI, KC_RALT, KC_DEL  \
+  ),
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  \
-    KC_INS,  _______, _______, _______, KC_NUHS, _______, JP_LBRC, JP_RBRC, KC_UP,   _______, KC_F12,  KC_BSLS, \
+    KC_INS,  _______, _______, _______, KC_QUOT, _______, JP_LBRC, JP_RBRC, KC_UP,   _______, KC_F12,  KC_BSLS, \
     _______, _______, _______, _______, KC_GRV, KC_BSLS,  JP_AT,   KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, KC_BSPC, \
     _______, _______, _______, _______, KC_NUBS, SP_MW,   _______, _______, _______, _______, _______, _______, \
-    SC_CAPS, _______, _______,          SP_HK,   _______, _______, _______,          AT_TS,   AT_PW,   XXXXXXX  \
+    SC_CAPS, _______, _______,          SP_HK,   _______, _______, _______,          AT_TS,   DF_PC,   DF_MC    \
   ),
 };
 
@@ -206,23 +218,35 @@ void matrix_scan_user(void) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
 
+    case DF_PC:
+      if (record->event.pressed) {
+        current_is_pc = true;
+      }
+      break;
+
+    case DF_MC:
+      if (record->event.pressed) {
+        current_is_pc = false;
+      }
+      break;
+
     case KC_LSFT:
       if (record->event.pressed) {
-        if (TIMER_DIFF_16(record->event.time, l_sh_pressed_time) < TAPPING_TERM + 100) {
-          unregister_code(KC_LSFT);
-          tap_code(KC_MHEN);
-        }
+        // if (TIMER_DIFF_16(record->event.time, l_sh_pressed_time) < TAPPING_TERM + 100) {
+        //   unregister_code(KC_LSFT);
+        //   tap_code(KC_MHEN);
+        // }
         l_sh_pressed_time = record->event.time;
       }
       break;
 
     case KC_RSFT:
       if (record->event.pressed) {
-        if (TIMER_DIFF_16(record->event.time, r_sh_pressed_time) < TAPPING_TERM + 100) {
-          unregister_code(KC_RSFT);
-          tap_code(KC_HENK);
-        }
-        r_sh_pressed_time = record->event.time;
+        // if (TIMER_DIFF_16(record->event.time, r_sh_pressed_time) < TAPPING_TERM + 100) {
+        //   unregister_code(KC_RSFT);
+        //   tap_code(KC_HENK);
+        // }
+        // r_sh_pressed_time = record->event.time;
       }
       break;
 
@@ -243,12 +267,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // if (TIMER_DIFF_16(record->event.time, sp_sf_pressed_time) < TAPPING_TERM + 100) {
         //   tap_code(KC_HENK);
         // } else {
+        if (current_is_pc) {
           tap_code(KC_MHEN);
+        } else {
+          tap_code(KC_LANG2);
+        }
+          
         //}
-        register_code(KC_RSFT);
+        // register_code(KC_RSFT);
         sp_sf_pressed_time = record->event.time;
       } else {
-        unregister_code(KC_RSFT);
+        // unregister_code(KC_RSFT);
         // if (is_not_pressed_key) {
         //   tap_code(KC_MHEN);
         // }
@@ -263,8 +292,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         is_sp_hk_pressed = true;
         sp_hk_pressed_time = record->event.time;
       } else {
-        if (is_not_pressed_key) {
+        if (current_is_pc) {
           tap_code(KC_HENK);
+        } else {
+          tap_code(KC_LANG1);
         }
         is_sp_hk_pressed = false;
         is_not_pressed_key = false;
