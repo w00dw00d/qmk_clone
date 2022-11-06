@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "config_common.h"
 
+<<<<<<< HEAD:keyboards/e3w2q/su120/w__d_o/config.h
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0x1209
 #define PRODUCT_ID      0x4649
@@ -27,6 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT         SU120
 #define DESCRIPTION     Expandable keyboard with up to 80 keys
 
+=======
+>>>>>>> upstream/master:keyboards/helix/rev3_4rows/config.h
 /* key matrix size */
 #define MATRIX_ROWS 12
 #define MATRIX_COLS 5
@@ -40,12 +43,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * DIODE_DIRECTION: COL2ROW = COL = Anode (+), ROW = Cathode (-, marked on diode)
  *                  ROW2COL = ROW = Anode (+), COL = Cathode (-, marked on diode)
  *
+<<<<<<< HEAD:keyboards/e3w2q/su120/w__d_o/config.h
 #define MATRIX_ROW_PINS { D1, D0, D4, C6, D7, E6, B4, B5, F4, F5 }
 #define MATRIX_COL_PINS { F6, F7, B1, B3, B2, B6 }
 */
 #define MATRIX_ROW_PINS { D1, D0, D4, C6, D7, E6 }
 #define MATRIX_COL_PINS { F4, F5, F6, F7, B1 }
 #define UNUSED_PINS
+=======
+ */
+#define MATRIX_ROW_PINS { D4, C6, D7, E6 }
+#define MATRIX_COL_PINS { F4, F5, F6, F7, B1, B3, B2 }
+>>>>>>> upstream/master:keyboards/helix/rev3_4rows/config.h
 
 /* COL2ROW, ROW2COL*/
 //#define DIODE_DIRECTION COL2ROW
@@ -207,6 +216,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define NO_ACTION_MACRO
 //#define NO_ACTION_FUNCTION
 
+<<<<<<< HEAD:keyboards/e3w2q/su120/w__d_o/config.h
 /*
  * MIDI options
  */
@@ -258,6 +268,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 */
 
+=======
+>>>>>>> upstream/master:keyboards/helix/rev3_4rows/config.h
 /* Bootmagic Lite key configuration */
 // #define BOOTMAGIC_LITE_ROW 0
 // #define BOOTMAGIC_LITE_COLUMN 0

@@ -8,7 +8,6 @@
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    osoba
 #define PRODUCT         oso_o_46
-#define DESCRIPTION     Expandable keyboard with up to 80 keys
 
 /* key matrix size */
 #define MATRIX_ROWS 5
@@ -29,7 +28,6 @@
 #define DIODE_DIRECTION COL2ROW
 #define MATRIX_ROW_PINS { C6, B6, B5, B4, E6 }
 #define MATRIX_COL_PINS { F0, F1, F4, F5, F6, F7, D7, D4, D5, D2, D0, D1 }
-#define UNUSED_PINS
 
 /* COL2ROW, ROW2COL*/
 //#define DIODE_DIRECTION COL2ROW

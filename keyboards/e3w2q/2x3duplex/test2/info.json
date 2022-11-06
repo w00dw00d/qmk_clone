@@ -1,9 +1,21 @@
 {
+<<<<<<< HEAD:keyboards/e3w2q/2x3duplex/test2/info.json
     "keyboard_name": "2x3test",
     "url": "",
     "maintainer": "e3w2q",
     "width": 3,
     "height": 2,
+=======
+    "keyboard_name": "Nozbe Reunion Pad",
+    "manufacturer": "Leon Omelan",
+    "url": "",
+    "maintainer": "Leon Omelan",
+    "usb": {
+        "vid": "0xFEED",
+        "pid": "0x6060",
+        "device_version": "0.0.1"
+    },
+>>>>>>> upstream/master:keyboards/handwired/nozbe_macro/info.json
     "layouts": {
         "LAYOUT": {
             "layout": [

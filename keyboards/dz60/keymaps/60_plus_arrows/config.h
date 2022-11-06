@@ -2,6 +2,7 @@
 
 #include "config_common.h"
 
+<<<<<<< HEAD:keyboards/dz60/keymaps/60_plus_arrows/config.h
 #ifndef NO_DEBUG
 #define NO_DEBUG
 #endif // !NO_DEBUG
@@ -16,6 +17,8 @@
 #define MANUFACTURER    KBDFans
 #define PRODUCT         DZ60
 
+=======
+>>>>>>> upstream/master:keyboards/dztech/bocc/config.h
 /* key matrix size */
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 15
@@ -30,9 +33,14 @@
  *                  ROW2COL = ROW = Anode (+), COL = Cathode (-, marked on diode)
  *
  */
+<<<<<<< HEAD:keyboards/dz60/keymaps/60_plus_arrows/config.h
 #define MATRIX_ROW_PINS { D0, D1, D2, D3, D5 }
 #define MATRIX_COL_PINS { F0, F1, E6, C7, C6, B7, D4, B1, B0, B5, B4, D7, D6, B3, F4 }
 #define UNUSED_PINS
+=======
+#define MATRIX_ROW_PINS { B0, B1, B2, B3, F0 }
+#define MATRIX_COL_PINS { B5, B6, C6, C7, F7, F6, F5, F4, F1, D1, D2, D3, D5, D4, D6, D7, B4 }
+>>>>>>> upstream/master:keyboards/dztech/bocc/config.h
 
 /* COL2ROW, ROW2COL*/
 #define DIODE_DIRECTION COL2ROW

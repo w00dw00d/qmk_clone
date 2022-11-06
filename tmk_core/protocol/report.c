@@ -241,6 +241,12 @@ void del_key_bit(report_keyboard_t* keyboard_report, uint8_t code) {
  * FIXME: Needs doc
  */
 void add_key_to_report(report_keyboard_t* keyboard_report, uint8_t key) {
+#ifdef APPLE_FN_ENABLE
+    if IS_APPLE_FN(key) {
+        keyboard_report->reserved = 1;
+        return;
+    }
+#endif
 #ifdef NKRO_ENABLE
     if (keyboard_protocol && keymap_config.nkro) {
         add_key_bit(keyboard_report, key);
@@ -255,6 +261,12 @@ void add_key_to_report(report_keyboard_t* keyboard_report, uint8_t key) {
  * FIXME: Needs doc
  */
 void del_key_from_report(report_keyboard_t* keyboard_report, uint8_t key) {
+#ifdef APPLE_FN_ENABLE
+    if IS_APPLE_FN(key) {
+        keyboard_report->reserved = 0;
+        return;
+    }
+#endif
 #ifdef NKRO_ENABLE
     if (keyboard_protocol && keymap_config.nkro) {
         del_key_bit(keyboard_report, key);
@@ -278,3 +290,16 @@ void clear_keys_from_report(report_keyboard_t* keyboard_report) {
 #endif
     memset(keyboard_report->keys, 0, sizeof(keyboard_report->keys));
 }
+
+#ifdef MOUSE_ENABLE
+/**
+ * @brief Compares 2 mouse reports for difference and returns result
+ *
+ * @param[in] new_report report_mouse_t
+ * @param[in] old_report report_mouse_t
+ * @return bool result
+ */
+__attribute__((weak)) bool has_mouse_report_changed(report_mouse_t* new_report, report_mouse_t* old_report) {
+    return memcmp(new_report, old_report, sizeof(report_mouse_t));
+}
+#endif

@@ -22,9 +22,16 @@ enum custom_keycodes {
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+<<<<<<< HEAD:keyboards/e3w2q/mx2u/keymaps/default/keymap.c
 
   [0] = LAYOUT(
     KC_1, KC_2, RGB_TOG, RGB_MOD, RGB_VAD, RGB_VAI, RGB_SAD, RGB_SAI, RGB_HUD, RGB_HUI, EEP_RST, RGB_RST
+=======
+  [0] = LAYOUT( /* Base */
+    KC_0,  KC_1, KC_2,
+    KC_3,  KC_4, KC_5,
+    KC_6,  KC_7, KC_8
+>>>>>>> upstream/master:keyboards/treasure/type9/keymaps/default/keymap.c
   ),
 };
 

@@ -7,6 +7,7 @@
 #define _ADJUST 3
 #define OR_EISU LALT(KC_GRV)
 
+<<<<<<< HEAD
 static bool is_timer = false;
 static bool is_key_down = false;
 
@@ -34,6 +35,15 @@ enum custom_keycodes {
   AT_TS,
   AT_TE,
   AT_PW,
+=======
+    LAYOUT(
+        KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, KC_DEL,
+        _______, RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD, RGB_VAI, RGB_VAD, _______, _______, _______, _______, QK_BOOT,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,
+        _______, _______, _______, _______, BL_DEC,  BL_TOGG, BL_INC,  BL_STEP, _______, _______, _______, _______, _______, _______,
+        _______, _______, _______,                   _______, _______, _______,          _______, _______, _______, _______, _______
+    )
+>>>>>>> upstream/master
 };
 
 const key_override_t at_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_2, JP_AT);
