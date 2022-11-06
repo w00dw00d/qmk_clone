@@ -100,6 +100,7 @@ enum custom_keycodes {
   QWERTY = SAFE_RANGE,
   QWERTY_M,
   LOWER,
+  LOWER_M,
   AT_TS,
   AT_PW,
   SP_SF,
@@ -111,20 +112,21 @@ static bool is_timer = false;
 static bool is_not_pressed_key = false;
 static bool is_sp_hk_pressed = false;
 static bool is_sp_sf_pressed = false;
+static bool is_alt_pressed = false;
 static uint16_t sp_hk_pressed_time = 0;
 static uint16_t sp_sf_pressed_time = 0;
 static uint16_t l_sh_pressed_time = 0;
 //static uint16_t r_sh_pressed_time = 0;
-static bool current_is_pc = true;
+static bool current_is_pc = false;
 
 #define _QWERTY 0
-#define _QWERTY_M 1
-#define _LOWER 2
-// #define _RAISE 3
+#define _LOWER 1
+#define _QWERTY_M 2
+#define _LOWER_M 3
 
-// #define ZH_TG A(JP_ZKHK)
+
 #define MO_LO MO(_LOWER)
-// #define MO_RA MO(_RAISE)
+#define MO_LM MO(_LOWER)
 #define SC_CAPS S(KC_CAPS)
 #define DF_PC DF(_QWERTY)
 #define DF_MC DF(_QWERTY_M)
@@ -132,6 +134,9 @@ static bool current_is_pc = true;
 // #define CL_PU C(KC_PGUP)
 // #define CL_PD C(KC_PGDN)
 // KC_MHEN KC_HENK KC_APP
+// #define ZH_TG A(JP_ZKHK)
+
+// #define MO_RA MO(_RAISE)
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_QWERTY] = LAYOUT(
     KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    JP_CIRC, \
@@ -140,19 +145,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
     KC_APP,  KC_LGUI, KC_LALT,          SP_SF,   KC_SPC,  KC_BSPC, MO_LO,            KC_RALT, KC_RGUI, KC_DEL  \
   ),
-  [_QWERTY_M] = LAYOUT(
-    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    JP_CIRC, \
-    KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    JP_MINS, \
-    KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
-    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
-    KC_APP,  KC_LALT, KC_LGUI,          SP_SF,   KC_SPC,  KC_BSPC, MO_LO,            KC_RGUI, KC_RALT, KC_DEL  \
-  ),
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  \
     KC_INS,  _______, _______, _______, KC_QUOT, _______, JP_LBRC, JP_RBRC, KC_UP,   _______, KC_F12,  KC_BSLS, \
     _______, _______, _______, _______, KC_GRV, KC_BSLS,  JP_AT,   KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, KC_BSPC, \
     _______, _______, _______, _______, KC_NUBS, SP_MW,   _______, _______, _______, _______, _______, _______, \
     SC_CAPS, _______, _______,          SP_HK,   _______, _______, _______,          AT_TS,   DF_PC,   DF_MC    \
+  ),
+  [_QWERTY_M] = LAYOUT(
+    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    JP_CIRC, \
+    KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    JP_MINS, \
+    KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
+    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
+    SC_CAPS,  KC_LGUI, KC_LALT,          KC_LGUI, KC_SPC,  KC_BSPC, MO_LM,            KC_RALT, KC_RGUI, KC_DEL  \
+  ),
+  [_LOWER_M] = LAYOUT(
+    RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  \
+    KC_INS,  _______, _______, _______, KC_QUOT, _______, JP_LBRC, JP_RBRC, KC_UP,   _______, KC_F12,  KC_BSLS, \
+    _______, _______, _______, _______, KC_GRV,  KC_BSLS, JP_AT,   KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, KC_BSPC, \
+    _______, _______, _______, _______, KC_NUBS, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______,          _______, _______, _______, _______,          AT_TS,   DF_PC,   DF_MC    \
   ),
 };
 
@@ -272,7 +284,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         } else {
           tap_code(KC_LANG2);
         }
-          
+
         //}
         // register_code(KC_RSFT);
         sp_sf_pressed_time = record->event.time;
@@ -302,15 +314,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       break;
 
-    case KC_SPC:
-      if (! is_sp_sf_pressed) {
-        break;
-      }
+    case KC_LALT:
       if (record->event.pressed) {
-        tap_code(KC_BSPC);
+        is_not_pressed_key = true;
+        is_alt_pressed = true;
+      } else {
+        if ((!current_is_pc) && is_not_pressed_key) {
+            unregister_code(KC_LALT);
+            register_code(KC_LGUI);
+            tap_code(KC_SPC);
+            unregister_code(KC_LGUI);
+            register_code(KC_LALT);
+        }
+        is_alt_pressed = false;
         is_not_pressed_key = false;
-        return false;
       }
+      break;
 
     case KC_LEFT:
       if (! is_sp_hk_pressed) {
