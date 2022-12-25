@@ -78,6 +78,7 @@ __attribute__((weak)) bool get_auto_shifted_key(uint16_t keycode, keyrecord_t *r
 #    ifndef NO_AUTO_SHIFT_SPECIAL
         case AUTO_SHIFT_SPECIAL:
 #    endif
+    case AUTO_SHIFT_USER_KEY:
             return true;
     }
     return get_custom_auto_shifted_key(keycode, record);

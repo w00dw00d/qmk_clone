@@ -1,3 +1,3 @@
 #!/bin/bash
-cp /home/w/qmk_firmware/.build/ergodash_mini_default.hex /mnt/c/02Work/
-echo Complete! 
+cp ~/Documents/develop/qmk_clone/.build/omkbd_ergodash_mini_default.hex ~/Documents/tmp/
+echo Complete!

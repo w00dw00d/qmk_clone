@@ -97,39 +97,33 @@ uint16_t conv_jis_map[4][2] = {
 };
 
 enum custom_keycodes {
-  QWERTY_M = SAFE_RANGE,
-  LOWER_M,
-  QWERTY,
+  QWERTY = SAFE_RANGE,
   LOWER,
   AT_TS,
   AT_PW,
   SP_SF,
   SP_HK,
   SP_MW,
+  DF_MC,
+  DF_PC,
 };
 
 static bool is_timer = false;
 static bool is_not_pressed_key = false;
 static bool is_sp_hk_pressed = false;
 static bool is_sp_sf_pressed = false;
-static bool is_alt_pressed = false;
 static uint16_t sp_hk_pressed_time = 0;
 static uint16_t sp_sf_pressed_time = 0;
 static uint16_t l_sh_pressed_time = 0;
 //static uint16_t r_sh_pressed_time = 0;
 static bool current_is_pc = false;
 
-#define _QWERTY_M 0
-#define _LOWER_M 1
-#define _QWERTY 2
-#define _LOWER 3
+#define _QWERTY 0
+#define _LOWER 1
 
 
 #define MO_LO MO(_LOWER)
-#define MO_LM MO(_LOWER)
 #define SC_CAPS S(KC_CAPS)
-#define DF_PC DF(_QWERTY)
-#define DF_MC DF(_QWERTY_M)
 
 // #define CL_PU C(KC_PGUP)
 // #define CL_PD C(KC_PGDN)
@@ -138,20 +132,6 @@ static bool current_is_pc = false;
 
 // #define MO_RA MO(_RAISE)
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-  [_QWERTY_M] = LAYOUT(
-    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    JP_CIRC, \
-    KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    JP_MINS, \
-    KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
-    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
-    KC_APP,  KC_LGUI, KC_LALT,          KC_LGUI, KC_SPC,  KC_BSPC, MO_LM,            KC_RALT, KC_RGUI, KC_DEL  \
-  ),
-  [_LOWER_M] = LAYOUT(
-    RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  \
-    KC_INS,  _______, _______, _______, KC_QUOT, _______, JP_LBRC, JP_RBRC, KC_UP,   _______, KC_F12,  KC_BSLS, \
-    _______, _______, _______, _______, KC_GRV,  KC_BSLS, JP_AT,   KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, KC_BSPC, \
-    _______, _______, _______, _______, KC_NUBS, _______, _______, _______, _______, _______, _______, _______, \
-    SC_CAPS, _______, _______,          _______, _______, _______, _______,          AT_TS,   DF_PC,   DF_MC    \
-  ),
   [_QWERTY] = LAYOUT(
     KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    JP_CIRC, \
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    JP_MINS, \
@@ -164,7 +144,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_INS,  _______, _______, _______, KC_QUOT, _______, JP_LBRC, JP_RBRC, KC_UP,   _______, KC_F12,  KC_BSLS, \
     _______, _______, _______, _______, KC_GRV, KC_BSLS,  JP_AT,   KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, KC_BSPC, \
     _______, _______, _______, _______, KC_NUBS, SP_MW,   _______, _______, _______, _______, _______, _______, \
-    SC_CAPS, _______, _______,          SP_HK,   _______, _______, _______,          AT_TS,   DF_PC,   DF_MC    \
+    SC_CAPS, _______, _______,          SP_HK,   _______, _______, _______,          AT_TS,   DF_MC,   DF_PC    \
   ),
 };
 
@@ -303,44 +283,44 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         is_not_pressed_key = true;
         is_sp_hk_pressed = true;
         sp_hk_pressed_time = record->event.time;
-      } else {
         if (current_is_pc) {
           tap_code(KC_HENK);
         } else {
           tap_code(KC_LANG1);
         }
+      } else {
         is_sp_hk_pressed = false;
         is_not_pressed_key = false;
       }
       break;
 
-    case KC_LALT:
-      if (record->event.pressed) {
-        is_not_pressed_key = true;
-        is_alt_pressed = true;
-      } else {
-        if ((!current_is_pc) && is_not_pressed_key) {
-            unregister_code(KC_LALT);
-            tap_code(KC_APP);
-        }
-        is_alt_pressed = false;
-        is_not_pressed_key = false;
-      }
-      break;
+    // case KC_LALT:
+    //   if (record->event.pressed) {
+    //     is_not_pressed_key = true;
+    //     is_alt_pressed = true;
+    //   } else {
+    //     if ((!current_is_pc) && is_not_pressed_key) {
+    //         unregister_code(KC_LALT);
+    //         tap_code(KC_APP);
+    //     }
+    //     is_alt_pressed = false;
+    //     is_not_pressed_key = false;
+    //   }
+    //   break;
 
-    case KC_RALT:
-      if (record->event.pressed) {
-        is_not_pressed_key = true;
-        is_alt_pressed = true;
-      } else {
-        if ((!current_is_pc) && is_not_pressed_key) {
-            unregister_code(KC_RALT);
-            tap_code(KC_APP);
-        }
-        is_alt_pressed = false;
-        is_not_pressed_key = false;
-      }
-      break;
+    // case KC_RALT:
+    //   if (record->event.pressed) {
+    //     is_not_pressed_key = true;
+    //     is_alt_pressed = true;
+    //   } else {
+    //     if ((!current_is_pc) && is_not_pressed_key) {
+    //         unregister_code(KC_RALT);
+    //         tap_code(KC_APP);
+    //     }
+    //     is_alt_pressed = false;
+    //     is_not_pressed_key = false;
+    //   }
+    //   break;
 
     case KC_LEFT:
       if (! is_sp_hk_pressed) {

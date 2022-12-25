@@ -25,7 +25,6 @@
 enum custom_keycodes {
     QWERTY = SAFE_RANGE,
     SP_CUR,
-    SP_NUM,
     SP_FUNC,
     SP_KANA,
     SP_EISU,
@@ -36,62 +35,9 @@ enum custom_keycodes {
     SP_LNG1,
     SP_LNG2,
     SP_LNTY,
+    SP_LLCK,
 };
 
-// const jp_us_list = {
-//     {KC_ZKHK, KC_GRV}, // Zenkaku ↔︎ Hankaku ↔ Kanji (半角 ↔ 全角 ↔ 漢字)
-//     {KC_CIRC, KC_EQL}, // ^
-//     {KC_YEN, KC_INT3}, // ¥
-//     {KC_AT, KC_LBRC}, // @
-//     {KC_LBRC, KC_RBRC}, // {
-//     {KC_EISU, KC_CAPS}, // Eisū (英数)
-//     {KC_COLN, KC_QUOT}, // :
-//     {KC_RBRC, KC_NUHS}, // }
-//     {KC_BSLS, KC_INT1}, // (backslash)
-//     {KC_KANA, KC_INT2}, // Katakana ↔ Hiragana ↔ Rōmaji (カタカナ ↔ ひらがな ↔ ローマ字)
-//     {KC_HASH, S(KC_3)}, // #
-//     {KC_AMPR, S(KC_6)}, // &
-//     {KC_QUOT, S(KC_7)}, //
-//     {KC_LPRN, S(KC_8)}, // (
-//     {KC_RPRN, S(KC_9)}, // )
-//     {KC_EQL, S(KC_MINS)}, // =
-//     {KC_PEQL, S(KC_MINS)}, // =
-//     {KC_TILD, S(KC_EQL)}, // ~
-//     {KC_PIPE, S(KC_INT3)}, // |
-//     {KC_GRV, S(KC_LBRC)}, // `
-//     {KC_LCBR, S(KC_RBRC)}, // {
-//     {KC_PLUS, S(KC_SCLN)}, // +
-//     {KC_PPLS, S(KC_SCLN)}, // +
-//     {KC_ASTR, S(KC_QUOT)}, // *
-//     {KC_PAST, S(KC_QUOT)}, // *
-//     {KC_RCBR, S(KC_NUHS)}, // }
-//     {KC_UNDS, S(KC_INT1)}, // _
-//     {KC_ZHTG, KC_GRV}, // Zenkaku ↔︎ Hankaku ↔ Kanji (半角 ↔ 全角 ↔ 漢字)
-//     {KC_DQUO, S(KC_2)}, // "
-//     {KC_MEISU, KC_LANG2}, // Eisū (英数) on macOS
-//     {KC_MKANA, KC_LANG1} // Kana (かな) on macOS
-// }
-// // 変換テーブル（shifted）
-// const uint16_t auto_shift_map_cnt = 7;
-// uint16_t auto_shift_map[7][2] = {
-//     {KC_UR01, JP_UNDS}
-//     ,{KC_0, JP_UNDS}
-//     ,{KC_SCLN, JP_COLN}
-//     ,{KC_QUOT, JP_ASTR}
-//     ,{KC_GRV, JP_CIRC}
-//     ,{KC_NUBS, JP_SLSH}
-//     ,{KC_BSLS, JP_PIPE}
-// };
-
-// // 変換テーブル（no shifted）
-// const uint16_t conv_jis_map_cnt = 5;
-// uint16_t conv_jis_map[5][2] = {
-//     {KC_UR01, KC_0}
-//     ,{KC_QUOT, JP_PLUS}
-//     ,{KC_GRV, JP_EQL}
-//     ,{KC_NUBS, JP_MINS}
-//     ,{KC_BSLS, JP_YEN}
-// };
 // 変換テーブル（シフト後の値） key : jp_pc : us_pc
 const uint16_t auto_shift_map_cnt = 16;
 uint16_t auto_shift_map[16][3] = {
@@ -113,7 +59,7 @@ uint16_t auto_shift_map[16][3] = {
     ,{KC_UR16, JP_COLN, S(KC_SCLN)} // ; :
 };
 
-// 変換テーブル（シフト前の値）
+// 変換テーブル（シフト前の値） key : jp_pc : us_pc
 const uint16_t conv_jis_map_cnt = 16;
 uint16_t conv_jis_map[16][3] = {
      {KC_UR01, KC_2, KC_2} // 2
@@ -136,7 +82,7 @@ uint16_t conv_jis_map[16][3] = {
 
 static bool current_is_pc = false;
 static bool is_timer = false;
-// static bool is_layer_lock = false;
+static bool is_layer_lock = false;
 static bool is_rshift_pressed = false;
 static uint16_t pressed_time = 0;
 static uint16_t last_keycode = 0;
@@ -146,8 +92,7 @@ static uint16_t lang_type = 1; // 1:jp 2:us
 
 #define _QWERTY 0
 #define _CURSOR 1
-#define _NUMBER 2
-#define _FUNC 3
+#define _FUNC 2
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
@@ -167,8 +112,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )    ,
 
     [_FUNC] = LAYOUT(
-    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                     KC_WH_U, _______, KC_MS_U, _______, _______, _______,
-    _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                    KC_WH_D, KC_MS_L, KC_MS_D, KC_MS_R, _______, _______,
+    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                     KC_WH_U, _______, KC_MS_U, _______, _______, SP_TS,
+    _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                    KC_WH_D, KC_MS_L, KC_MS_D, KC_MS_R, _______, SP_LLCK,
     _______, RGB_HUI, RGB_SAI, RGB_VAI, KC_F11,  KC_F12,  _______, _______, KC_WH_L, KC_WH_R, _______, _______, _______, _______,
     RGB_TOG,                   _______, KC_BTN3, KC_BTN2, KC_BTN1, _______, _______, _______, _______,                   SP_LNTY,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
@@ -280,9 +225,6 @@ void set_layer(bool is_set, uint16_t keycode) {
         case SP_CUR:
             layer = _CURSOR;
             break;
-        case SP_NUM:
-            layer = _NUMBER;
-            break;
         case SP_FUNC:
             layer = _FUNC;
             break;
@@ -292,7 +234,7 @@ void set_layer(bool is_set, uint16_t keycode) {
         set_sub_color();
     } else {
         layer_off(layer);
-        set_main_color();
+        if (!is_layer_lock) set_main_color();
     }
 }
 
@@ -308,9 +250,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             }
             break;
 
+        case SP_LLCK:
+            if (record -> event.pressed) {
+                is_layer_lock = true;
+                set_layer(true, SP_CUR);
+            }
+            break;
+
         case SP_CUR:
-        case SP_NUM:
         case SP_FUNC:
+            if (record -> event.pressed) is_layer_lock = false;
             set_layer(record -> event.pressed, keycode);
             break;
 

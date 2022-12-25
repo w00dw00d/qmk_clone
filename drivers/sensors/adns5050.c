@@ -70,7 +70,7 @@ void adns5050_init(void) {
 // synchronization signal to the master.
 void adns5050_sync(void) {
     writePinLow(ADNS5050_CS_PIN);
-    wait_us(1);
+    wait_us(84);
     writePinHigh(ADNS5050_CS_PIN);
 }
 
@@ -88,12 +88,12 @@ uint8_t adns5050_serial_read(void) {
 
     for (uint8_t i = 0; i < 8; ++i) {
         writePinLow(ADNS5050_SCLK_PIN);
-        wait_us(1);
+        wait_us(84);
 
         byte = (byte << 1) | readPin(ADNS5050_SDIO_PIN);
 
         writePinHigh(ADNS5050_SCLK_PIN);
-        wait_us(1);
+        wait_us(84);
     }
 
     return byte;
@@ -110,7 +110,7 @@ void adns5050_serial_write(uint8_t data) {
         else
             writePinLow(ADNS5050_SDIO_PIN);
 
-        wait_us(2);
+        wait_us(167);
 
         writePinHigh(ADNS5050_SCLK_PIN);
     }
@@ -118,7 +118,7 @@ void adns5050_serial_write(uint8_t data) {
     // tSWR. See page 15 of the ADNS spec sheet.
     // Technically, this is only necessary if the next operation is an SDIO
     // read. This is not guaranteed to be the case, but we're being lazy.
-    wait_us(4);
+    wait_us(334);
 
     // Note that tSWW is never necessary. All write operations require at
     // least 32us, which exceeds tSWW, so there's never a need to wait for it.
@@ -142,7 +142,7 @@ uint8_t adns5050_read_reg(uint8_t reg_addr) {
     // Technically, this is only necessary if the next operation is an SDIO
     // read or write. This is not guaranteed to be the case.
     // Honestly, this wait could probably be removed.
-    wait_us(1);
+    wait_us(84);
 
     adns5050_cs_deselect();
 

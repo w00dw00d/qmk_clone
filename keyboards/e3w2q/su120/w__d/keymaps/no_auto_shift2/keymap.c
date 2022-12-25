@@ -34,16 +34,16 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/feature_auto_shift.md
 const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_0,    JP_UNDS);
 const key_override_t pipe_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSLS, JP_PIPE);
 const key_override_t coln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_SCLN, JP_COLN);
-// const key_override_t tild_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_GRV,  JP_ASTR);
-// const key_override_t plus_key_override = ko_make_with_layers_and_negmods(0, KC_GRV, JP_PLUS, ~0, (uint8_t) MOD_MASK_SHIFT);
+const key_override_t tild_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_GRV,  JP_ASTR);
+const key_override_t plus_key_override = ko_make_with_layers_and_negmods(0, KC_GRV, JP_PLUS, ~0, (uint8_t) MOD_MASK_SHIFT);
 const key_override_t bsls_key_override = ko_make_with_layers_and_negmods(0, KC_BSLS, JP_YEN, ~0, (uint8_t) MOD_MASK_SHIFT);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
   &unds_key_override,
   &pipe_key_override,
   &coln_key_override,
-  // &tild_key_override,
-  // &plus_key_override,
+  &tild_key_override,
+  &plus_key_override,
   &bsls_key_override,
   NULL
 };
@@ -52,12 +52,13 @@ enum custom_keycodes {
   QWERTY = SAFE_RANGE ,
   LOWER,
   AT_TS,
-  AT_PW,
   SP_SF,
   SP_HK,
   SP_MW,
+  SP_PM,
 };
 
+static bool is_pc = false;
 static bool is_timer = false;
 static bool is_not_pressed_key = false;
 static bool is_sp_hk_pressed = false;
@@ -79,10 +80,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
   [_LOWER] = LAYOUT(
     RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, \
-    KC_INS,  _______, JP_AT,   JP_CIRC, KC_BSLS, _______, _______, _______, KC_UP,   JP_ASTR, JP_PLUS, \
-    _______, _______, _______, _______, SP_MW,   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, \
+    KC_INS,  _______, JP_AT,   JP_CIRC, KC_BSLS, _______, XXXXXXX, XXXXXXX, XXXXXXX, JP_ASTR, JP_PLUS, \
+    _______, _______, _______, _______, _______, _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, _______, \
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
-    S(KC_CAPS),_______,_______,XXXXXXX, SP_HK,   _______, _______, XXXXXXX,          AT_TS,   AT_PW,   XXXXXXX  \
+    S(KC_CAPS),_______,_______,XXXXXXX, SP_HK,   KC_BSPC, _______, XXXXXXX,          AT_TS,   SP_PM,   XXXXXXX  \
   ),
 };
 
@@ -106,6 +107,11 @@ void matrix_scan_user(void) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
+    case SP_PM:
+      if (record->event.pressed) {
+        is_pc = !is_pc;
+      }
+      break;
 
     case SP_MW:
       if (record->event.pressed) {
@@ -121,7 +127,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if (record->event.pressed) {
         is_not_pressed_key = true;
         is_sp_hf_pressed = true;
-        tap_code(KC_MHEN);
+        if (is_pc) {
+          tap_code(KC_MHEN);
+        } else {
+          tap_code(KC_LANG2);
+        }
         register_code(KC_RSFT);
       } else {
         unregister_code(KC_RSFT);
@@ -139,7 +149,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         is_sp_hk_pressed = true;
       } else {
         if (is_not_pressed_key) {
-          tap_code(KC_HENK);
+          if (is_pc) {
+            tap_code(KC_HENK);
+          } else {
+            tap_code(KC_LANG1);
+          }
         }
         is_sp_hk_pressed = false;
         is_not_pressed_key = false;
@@ -205,14 +219,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case AT_TS:
       if (record->event.pressed) {
         is_timer = true;
-      }
-      break;
-
-    case AT_PW:
-      if (record->event.pressed) {
-        SEND_STRING("Ep");
-        tap_code(JP_AT);
-        SEND_STRING("rkUsers37");
       }
       break;
 
