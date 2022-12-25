@@ -106,7 +106,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_CURSOR] = LAYOUT(
     _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      _______, _______, KC_UP,   _______, _______, _______,
     _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   KC_UR10, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
-    _______, _______, _______, KC_UR11, KC_UR14, _______, _______, _______, _______, KC_UR15, KC_UR12, KC_UR13, _______, _______,
+    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  _______, _______, _______, KC_UR11, KC_UR14, _______, _______, _______,
     _______,                   _______, _______, SP_KANA, _______, _______, _______, _______, _______,                   _______,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
