@@ -96,17 +96,17 @@ uint16_t conv_jis_map[16][3] = {
 // MAC or PC
 const uint16_t conv_mod_map_cnt = 3;
 uint16_t conv_mod_map[3][3] = {
-     {KC_UR17, KC_LGUI, KC_LCTL} // cmd
+     {KC_UR17, KC_LGUI,  KC_LCTL} // cmd
     ,{KC_UR18, KC_LALT, KC_LGUI}  // option
     ,{KC_UR19, KC_LCTL, KC_LALT} // control
 };
 
-//static bool is_not_keypress = false;
+static bool is_not_keypress = false;
 static uint16_t current_target = TARGET_MAC;
 static uint16_t current_layout = LAYOUT_JIS;
 static bool is_timer = false;
 static bool is_layer_lock = false;
-// static bool is_rshift_pressed = false;
+static bool is_rshift_pressed = false;
 static uint16_t pressed_time = 0;
 static uint16_t last_keycode = 0;
 
@@ -119,18 +119,18 @@ static uint16_t last_keycode = 0;
 // SP_CUR SP_LLCK KC_ESC KC_DEL KC_UR13, KC_UR12, KC_UR15, KC_DOT
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
-    KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                      KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,     KC_UR07,
-    KC_UR19, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,   KC_UR16,  KC_ENT,
-    _______, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_UR08, KC_UR09, KC_N,    KC_M,    KC_COMM, KC_DOT, KC_SLSH,  _______,
+    XXXXXXX, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                      KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,     XXXXXXX,
+    XXXXXXX, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,   KC_ENT,   XXXXXXX,
+    XXXXXXX, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_UR08, KC_UR09, KC_N,    KC_M,    KC_COMM, KC_DOT, KC_SLSH,  XXXXXXX,
     KC_ESC,                    KC_UR18, KC_UR17, KC_LSFT, KC_SPC,  KC_BSPC, SP_CUR,  SP_FUNC, KC_UR19,                   KC_DEL,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 
     [_CURSOR] = LAYOUT(
-    _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      KC_UR12, _______, KC_UP,   KC_UR10, _______, KC_UR07,
-    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_ENT ,
-    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  SP_SPRC, SP_SPRW, KC_UR13, KC_UR11, KC_UR14, _______, _______, _______,
-    _______,                   _______, _______, _______, SP_LANG, _______, _______, SP_LLCK, _______,                   _______,
+    _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      JP_PLUS, KC_TAB,  KC_UP,   KC_UR10, KC_UR07, _______,
+    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   SP_LANG, KC_LEFT, KC_DOWN, KC_RGHT, KC_UR16, _______,
+    _______, _______, _______, _______, _______, KC_DOT,  SP_SPRC, SP_SPRW, JP_ASTR, KC_UR11, KC_UR14, _______, _______, _______,
+    _______,                   _______, _______, _______, _______, _______, _______, SP_LLCK, _______,                   _______,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 
@@ -145,7 +145,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_TENKEY] = LAYOUT(
     _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      _______, _______, KC_UP,   _______, _______, _______,
     _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
-    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  SP_SPRC, SP_SPRW, _______, _______, _______, _______, _______, _______,
+    _______, _______, _______, _______, _______, KC_DOT,  SP_SPRC, SP_SPRW, _______, _______, _______, _______, _______, _______,
     _______,                   _______, _______, KC_LSFT, KC_BSPC, _______, _______, SP_LLCK, _______,                   _______,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
@@ -349,32 +349,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             return false;
             break;
 
-        case KC_UR20:
-            if (record -> event.pressed) {
-                if (current_target == TARGET_MAC) {
-                    register_code(KC_LGUI);
-                    tap_code(KC_LEFT);
-                    unregister_code(KC_LGUI);
-                } else {
-                    tap_code(KC_HOME);
-                }
-            }
-            return false;
-            break;
-
-        case KC_UR21:
-            if (record -> event.pressed) {
-                if (current_target == TARGET_MAC) {
-                    register_code(KC_LGUI);
-                    tap_code(KC_RGHT);
-                    unregister_code(KC_LGUI);
-                } else {
-                    tap_code(KC_END);
-                }
-            }
-            return false;
-            break;
-
         case SP_TO_MAC:
             if (record -> event.pressed) {
                 current_target = TARGET_MAC;
@@ -417,9 +391,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             }
             break;
 
-        // case KC_RSFT:
-        //     is_rshift_pressed = record -> event.pressed;
-        //     break;
+        case KC_RSFT:
+            is_rshift_pressed = record -> event.pressed;
+            break;
 
         case SP_TS:
             if (record -> event.pressed) {
@@ -428,7 +402,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             break;
 
         default:
-            // is_not_keypress = false;
+            is_not_keypress = false;
             break;
     }
     return true;

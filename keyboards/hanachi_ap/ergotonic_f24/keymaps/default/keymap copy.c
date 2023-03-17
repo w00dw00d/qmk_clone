@@ -21,16 +21,6 @@
 #include <print.h>
 #endif
 
-enum target {
-    TARGET_MAC = 1,
-    TARGET_PC,
-};
-
-enum layout {
-    LAYOUT_JIS = 1,
-    LAYOUT_ANSI,
-};
-
 // Defines the keycodes used by our macros in process_record_user
 enum custom_keycodes {
     QWERTY = SAFE_RANGE,
@@ -38,14 +28,13 @@ enum custom_keycodes {
     SP_FUNC,
     SP_KANA,
     SP_EISU,
-    SP_TO_MAC,
-    SP_TO_PC,
-    SP_TO_JIS,
-    SP_TO_ANS,
+    SP_IS_MAC,
+    SP_IS_PC,
     SP_TS,
     SP_LANG,
     SP_LNG1,
     SP_LNG2,
+    SP_LNTY,
     SP_LLCK,
     SP_SPRC,
     SP_SPRW,
@@ -93,22 +82,14 @@ uint16_t conv_jis_map[16][3] = {
     ,{KC_UR16, JP_SCLN, KC_SCLN} // ; :
 };
 
-// MAC or PC
-const uint16_t conv_mod_map_cnt = 3;
-uint16_t conv_mod_map[3][3] = {
-     {KC_UR17, KC_LGUI, KC_LCTL} // cmd
-    ,{KC_UR18, KC_LALT, KC_LGUI}  // option
-    ,{KC_UR19, KC_LCTL, KC_LALT} // control
-};
-
-//static bool is_not_keypress = false;
-static uint16_t current_target = TARGET_MAC;
-static uint16_t current_layout = LAYOUT_JIS;
+static bool is_not_keypress = false;
+static bool current_is_pc = false;
 static bool is_timer = false;
 static bool is_layer_lock = false;
-// static bool is_rshift_pressed = false;
+static bool is_rshift_pressed = false;
 static uint16_t pressed_time = 0;
 static uint16_t last_keycode = 0;
+static uint16_t lang_type = 1; // 1:jp 2:us
 
 // Defines names for use in layer keycodes and the keymap
 
@@ -116,37 +97,37 @@ static uint16_t last_keycode = 0;
 #define _CURSOR 1
 #define _FUNC 2
 #define _TENKEY 3
-// SP_CUR SP_LLCK KC_ESC KC_DEL KC_UR13, KC_UR12, KC_UR15, KC_DOT
+// SP_CUR
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                      KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,     KC_UR07,
-    KC_UR19, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,   KC_UR16,  KC_ENT,
-    _______, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_UR08, KC_UR09, KC_N,    KC_M,    KC_COMM, KC_DOT, KC_SLSH,  _______,
-    KC_ESC,                    KC_UR18, KC_UR17, KC_LSFT, KC_SPC,  KC_BSPC, SP_CUR,  SP_FUNC, KC_UR19,                   KC_DEL,
+    KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,   KC_UR16,  KC_ENT ,
+    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_UR08, KC_UR09, KC_N,    KC_M,    KC_COMM, KC_DOT, KC_SLSH,  KC_RSFT,
+    KC_ESC,                    KC_LALT, KC_LGUI, KC_LSFT, KC_SPC,  KC_BSPC, SP_CUR,  SP_FUNC, SP_LLCK,                   KC_DEL,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 
     [_CURSOR] = LAYOUT(
-    _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      KC_UR12, _______, KC_UP,   KC_UR10, _______, KC_UR07,
-    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_ENT ,
-    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  SP_SPRC, SP_SPRW, KC_UR13, KC_UR11, KC_UR14, _______, _______, _______,
-    _______,                   _______, _______, _______, SP_LANG, _______, _______, SP_LLCK, _______,                   _______,
+    _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      _______, _______, KC_UP,   _______, _______, _______,
+    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   KC_UR10, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
+    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  SP_SPRC, SP_SPRW, _______, KC_UR11, KC_UR14, _______, _______, _______,
+    _______,                   _______, _______, _______, SP_LANG, _______, _______, _______, _______,                   _______,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 
     [_FUNC] = LAYOUT(
-    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                   SP_TO_MAC,SP_TO_PC, _______, _______, _______, _______,
-    _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                  SP_TO_JIS,SP_TO_ANS,_______, _______, _______, _______,
-    _______, _______, _______, _______, KC_F11,  KC_F12,  SP_SPRC, SP_SPRW, _______, _______, _______, _______, _______, _______,
-    _______,                   _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
+    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                     KC_WH_U, _______, KC_MS_U, _______, _______, SP_TS,
+    _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                    KC_WH_D, KC_MS_L, KC_MS_D, KC_MS_R, _______, _______,
+    _______, RGB_HUI, RGB_SAI, RGB_VAI, KC_F11,  KC_F12,  SP_SPRC, SP_SPRW, KC_WH_L, KC_WH_R, _______, _______, _______, _______,
+    RGB_TOG,                   _______, KC_BTN3, KC_BTN2, KC_BTN1, _______, _______, _______, _______,                   SP_LNTY,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 
     [_TENKEY] = LAYOUT(
     _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      _______, _______, KC_UP,   _______, _______, _______,
-    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
-    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  SP_SPRC, SP_SPRW, _______, _______, _______, _______, _______, _______,
-    _______,                   _______, _______, KC_LSFT, KC_BSPC, _______, _______, SP_LLCK, _______,                   _______,
+    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   KC_UR10, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
+    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  KC_BSPC, _______, _______, KC_UR11, KC_UR14, _______, _______, _______,
+    _______,                   _______, _______, KC_LSFT, KC_ENT,  _______, _______, _______, _______,                   _______,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 };
@@ -205,21 +186,14 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
 uint16_t get_shifted_key(uint16_t keycode) {
     for (int i = 0; i < auto_shift_map_cnt; i++) {
-        if (auto_shift_map[i][0] == keycode) return auto_shift_map[i][current_layout];
+        if (auto_shift_map[i][0] == keycode) return auto_shift_map[i][lang_type];
     }
     return XXXXXXX;
 }
 
 uint16_t get_conv_jis_key(uint16_t keycode) {
     for (int i = 0; i < conv_jis_map_cnt; i++) {
-        if (conv_jis_map[i][0] == keycode) return conv_jis_map[i][current_layout];
-    }
-    return XXXXXXX;
-}
-
-uint16_t get_conv_mod_key(uint16_t keycode) {
-    for (int i = 0; i < conv_mod_map_cnt; i++) {
-        if (conv_mod_map[i][0] == keycode) return conv_mod_map[i][current_target];
+        if (conv_jis_map[i][0] == keycode) return conv_jis_map[i][lang_type];
     }
     return XXXXXXX;
 }
@@ -240,32 +214,20 @@ void matrix_scan_user(void) {
 // }
 
 void set_input_source(bool is_eisu) {
-    // if (current_layout && current_target) {
-    //     register_code(KC_LALT);
-    //     tap_code(KC_GRV);
-    //     unregister_code(KC_LALT);
-    //     return;
-    // }
-
     set_sub1_color();
     if (is_eisu) {
-        tap_code(KC_LANG2);
+        if (current_is_pc) {
+            tap_code(KC_MHEN);
+        } else {
+            tap_code(KC_LANG2);
+        }
     } else {
-        tap_code(KC_LANG1);
+        if (current_is_pc) {
+            tap_code(KC_HENK);
+        } else {
+            tap_code(KC_LANG1);
+        }
     }
-    // if (is_eisu) {
-    //     if (current_target) {
-    //         tap_code(KC_MHEN);
-    //     } else {
-    //         tap_code(KC_LANG2);
-    //     }
-    // } else {
-    //     if (current_target) {
-    //         tap_code(KC_HENK);
-    //     } else {
-    //         tap_code(KC_LANG1);
-    //     }
-    // }
     set_main_color();
 }
 
@@ -316,6 +278,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             }
             break;
 
+        case SP_LNTY:
+            if (record -> event.pressed) {
+                lang_type = (lang_type == 1 ? 2 : 1);
+            }
+            break;
+
         case SP_LLCK:
             if (record -> event.pressed) {
                 is_layer_lock = ! is_layer_lock;
@@ -338,69 +306,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             }
             break;
 
-        case KC_UR17:
-        case KC_UR18:
-        case KC_UR19:
+        case SP_IS_PC:
             if (record -> event.pressed) {
-                register_code(get_conv_mod_key(keycode));
-            } else {
-                unregister_code(get_conv_mod_key(keycode));
-            }
-            return false;
-            break;
-
-        case KC_UR20:
-            if (record -> event.pressed) {
-                if (current_target == TARGET_MAC) {
-                    register_code(KC_LGUI);
-                    tap_code(KC_LEFT);
-                    unregister_code(KC_LGUI);
-                } else {
-                    tap_code(KC_HOME);
-                }
-            }
-            return false;
-            break;
-
-        case KC_UR21:
-            if (record -> event.pressed) {
-                if (current_target == TARGET_MAC) {
-                    register_code(KC_LGUI);
-                    tap_code(KC_RGHT);
-                    unregister_code(KC_LGUI);
-                } else {
-                    tap_code(KC_END);
-                }
-            }
-            return false;
-            break;
-
-        case SP_TO_MAC:
-            if (record -> event.pressed) {
-                current_target = TARGET_MAC;
+                current_is_pc = true;
             }
             break;
 
-        case SP_TO_PC:
+        case SP_IS_MAC:
             if (record -> event.pressed) {
-                current_target = TARGET_PC;
-            }
-            break;
-
-        case SP_TO_JIS:
-            if (record -> event.pressed) {
-                current_layout = LAYOUT_JIS;
-            }
-            break;
-
-        case SP_TO_ANS:
-            if (record -> event.pressed) {
-                current_layout = LAYOUT_ANSI;
+                current_is_pc = false;
             }
             break;
 
         case SP_EISU:
             if (record -> event.pressed) {
+                register_code(KC_LSFT);
+            } else {
+                unregister_code(KC_LSFT);
                 set_input_source(true);
             }
             break;
@@ -417,9 +339,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             }
             break;
 
-        // case KC_RSFT:
-        //     is_rshift_pressed = record -> event.pressed;
-        //     break;
+        case KC_RSFT:
+            is_rshift_pressed = record -> event.pressed;
+            break;
 
         case SP_TS:
             if (record -> event.pressed) {
@@ -428,7 +350,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             break;
 
         default:
-            // is_not_keypress = false;
+            is_not_keypress = false;
             break;
     }
     return true;
