@@ -21,8 +21,9 @@
 
 #define TP_TYPE TP_TYPE_IQS5XX
 
-static int16_t send_flg_max = 3;
+static int16_t send_flg_max = 2;
 static int16_t send_flg_counter = 0;
+static int16_t latest_ges = 0;
 
 static void dummy_func(uint8_t btn){};
 void (*pointing_device_set_button)(uint8_t btn) = dummy_func;
@@ -123,11 +124,13 @@ void matrix_scan_kb() {
         static iqs5xx_processed_data_t iqs5xx_processed_data;
         static iqs5xx_gesture_data_t iqs5xx_gesture_data;
         bool send_flg = process_iqs5xx(&iqs5xx_data, &iqs5xx_processed_data, &mouse_rep, &iqs5xx_gesture_data);
-
+        // ジェスチャが行われたとみなすか（スクロール以外）
+        bool is_reckon_ges = (abs(iqs5xx_processed_data.fingers[0].start.x - iqs5xx_processed_data.fingers[0].last.x) > MIN_RECKON_GES
+                           || abs(iqs5xx_processed_data.fingers[0].start.y - iqs5xx_processed_data.fingers[0].last.y) > MIN_RECKON_GES);
         switch (iqs5xx_gesture_data.two.gesture_state) {
             case GESTURE_SWIPE_RU ... GESTURE_SWIPE_UL:
                 if (is_lower_press) {
-                    if(timer_elapsed32(ges_time) > GES_TIME_MS) {
+                    if(timer_elapsed32(ges_time) > GES_TIME_MS && is_reckon_ges) {
                         if (current_target == 1) {
                             tap_code16(LGUI(KC_W));
                         } else {
@@ -139,10 +142,12 @@ void matrix_scan_kb() {
                     mouse_rep.v = -1;
                     send_flg = update_send_flg_counter();
                 }
+                mouse_rep.x = 0;
+                mouse_rep.y = 0;
                 break;
             case GESTURE_SWIPE_LD ... GESTURE_SWIPE_DR:
                 if (is_lower_press) {
-                    if(timer_elapsed32(ges_time) > GES_TIME_MS) {
+                    if(timer_elapsed32(ges_time) > GES_TIME_MS && is_reckon_ges) {
                         if (current_target == 1) {
                             tap_code16(LCTL(KC_UP));
                         } else {
@@ -154,10 +159,12 @@ void matrix_scan_kb() {
                     mouse_rep.v = 1;
                     send_flg = update_send_flg_counter();
                 }
+                mouse_rep.x = 0;
+                mouse_rep.y = 0;
                 break;
             case GESTURE_SWIPE_R:
                 if (!is_lower_press) {
-                    if(timer_elapsed32(ges_time) > GES_TIME_MS) {
+                    if(timer_elapsed32(ges_time) > GES_TIME_MS && is_reckon_ges) {
                         if (current_target == 1) {
                             if (current_layout == 1) {
                                 tap_code16(LGUI(JP_RBRC));
@@ -173,10 +180,12 @@ void matrix_scan_kb() {
                     mouse_rep.h = 1;
                     send_flg = update_send_flg_counter();
                 }
+                mouse_rep.x = 0;
+                mouse_rep.y = 0;
                 break;
             case GESTURE_SWIPE_L:
                 if (!is_lower_press) {
-                    if(timer_elapsed32(ges_time) > GES_TIME_MS) {
+                    if(timer_elapsed32(ges_time) > GES_TIME_MS && is_reckon_ges) {
                         if (current_target == 1) {
                             if (current_layout == 1) {
                                 tap_code16(LGUI(JP_LBRC));
@@ -192,12 +201,18 @@ void matrix_scan_kb() {
                     mouse_rep.h = -1;
                     send_flg = update_send_flg_counter();
                 }
+                mouse_rep.x = 0;
+                mouse_rep.y = 0;
                 break;
             case GESTURE_PINCH_IN:
                 tap_code16(LCTL(KC_EQL));
+                mouse_rep.x = 0;
+                mouse_rep.y = 0;
                 break;
             case GESTURE_PINCH_OUT:
                 tap_code16(LCTL(KC_MINS));
+                mouse_rep.x = 0;
+                mouse_rep.y = 0;
                 break;
             default:
                 break;
@@ -224,8 +239,8 @@ void matrix_scan_kb() {
                 iqs5xx_gesture_data.two.dist_sq, iqs5xx_gesture_data.two.dot, iqs5xx_gesture_data.two.dot_rel);
             }
         }
+        latest_ges = iqs5xx_gesture_data.two.gesture_state;
     }
-
     matrix_scan_user();
 }
 #endif

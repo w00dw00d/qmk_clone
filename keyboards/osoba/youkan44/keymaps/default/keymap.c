@@ -129,7 +129,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______,  KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,         KC_UR12, _______, KC_UP,   KC_UR08, KC_UR09, _______,
   _______,  KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,      KC_UR10, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
   _______,  _______, _______, KC_UR11, KC_UR14, KC_DOT,       _______, _______, _______, _______, _______, _______,
-  _______,                    _______, _______, _______,      _______, _______, _______,                   _______
+  _______,                    _______, _______, _______,      SP_KANA, _______, _______,                   _______
 ),
 [_RAISE] = LAYOUT(
   _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,        _______, _______, KC_UP,   _______, _______, _______,
@@ -276,9 +276,9 @@ void get_captcha(uint16_t keycode) {
 //https://github.com/qmk/qmk_firmware/blob/master/docs/feature_layers.md
 layer_state_t layer_state_set_user(layer_state_t state) {
     // ADJUSTからのレイヤー変更だったら日本語入力ON
-    if (layer_state_cmp(state, _ADJUST)) {
-        set_input_source(false);
-    }
+    // if (layer_state_cmp(state, _ADJUST)) {
+    //     set_input_source(false);
+    // }
     state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
     return state;
 }
@@ -403,12 +403,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
         case SP_EISU:
             if (record -> event.pressed) {
                 set_input_source(true);
+                is_not_keypress = false;
             }
             break;
 
         case SP_KANA:
             if (record -> event.pressed) {
                 set_input_source(false);
+                is_not_keypress = false;
             }
             break;
 

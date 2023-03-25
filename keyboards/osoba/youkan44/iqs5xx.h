@@ -28,6 +28,7 @@
 #define MIN_MOVE_FOR_PINCH_UPDATE 1000
 #define MIN_MOVE_FOR_ROT_UPDATE 100
 #define MAX_FINGER_MOVEMENT 500  // フィンガーの移動量の最大値
+#define MIN_RECKON_GES 200 // ジェスチャが行われたとみなす最低の距離（スクロール以外）
 
 #define IQS_X_DIR (1)  // 1 or -1
 #define IQS_Y_DIR (1)  // 1 or -1

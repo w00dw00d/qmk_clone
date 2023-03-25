@@ -32,6 +32,7 @@
 #define IQS5xx_REF_VALS 0x0303
 #define IQS5xx_SYSTEM_CTRL0 0x0431
 #define IQS5xx_SYSTEM_CTRL1 0x0432
+#define IQS5xx_FINGER_SPLIT 0x066B
 #define IQS5xx_DEFAULT_READ 0x0675
 
 #define I2C_TIMEOUT 1000
@@ -156,6 +157,15 @@ int init_iqs5xx(void) {
         if (res) return 0;
     }
 
+    data = 0x0D;
+    res = iqs_app_writeReg(IQS5xx_FINGER_SPLIT, &data, 1);
+    if (res) {
+        // retry once to avoid LP mode
+        res = iqs_app_writeReg(IQS5xx_FINGER_SPLIT, &data, 1);
+
+        if (res) return 0;
+    }
+
     uint16_t default_addr = ((uint16_t)(IQS5xx_FINGER_NUM << 8) | (IQS5xx_FINGER_NUM >> 8));
 
     iqs_app_writeReg(IQS5xx_DEFAULT_READ, (uint8_t*)&default_addr, sizeof(default_addr));
@@ -250,17 +260,6 @@ static void recognize_gesture(iqs5xx_data_t const* const data, iqs5xx_processed_
     // vector from finger 1 to 0
     int32_t dx                = ((int32_t)processed->fingers[0].last.x - processed->fingers[1].last.x);
     int32_t dy                = ((int32_t)processed->fingers[0].last.y - processed->fingers[1].last.y);
-    // int32_t dx = (int32_t)(processed->fingers[0].last.x) - (int32_t)(processed->fingers[1].last.x);
-    // int32_t dy = (int32_t)(processed->fingers[0].last.y) - (int32_t)(processed->fingers[1].last.y);
-
-    // const int32_t MAX_FINGER_MOVEMENT = 1024;  // フィンガーの移動量の最大値
-
-    // // 移動量が最大値を超えていたら、最大値に制限する
-    // if (dx > MAX_FINGER_MOVEMENT) dx = MAX_FINGER_MOVEMENT;
-    // if (dx < -MAX_FINGER_MOVEMENT) dx = -MAX_FINGER_MOVEMENT;
-    // if (dy > MAX_FINGER_MOVEMENT) dy = MAX_FINGER_MOVEMENT;
-    // if (dy < -MAX_FINGER_MOVEMENT) dy = -MAX_FINGER_MOVEMENT;
-
     gesture_data->two.dot     = processed->fingers[0].dx * processed->fingers[1].dx + processed->fingers[0].dy * processed->fingers[1].dy;
     gesture_data->two.dot_rel = (((int32_t)processed->fingers[0].rel.x * processed->fingers[1].rel.x)) + (((int32_t)processed->fingers[0].rel.y * processed->fingers[1].rel.y));
     gesture_data->two.dist_sq = ((dx * dx) >> 5) + ((dy * dy) >> 5);
@@ -390,9 +389,6 @@ bool process_iqs5xx(iqs5xx_data_t const* const data, iqs5xx_processed_data_t* pr
                 processed->fingers[idx].dy   = ((int32_t)data->fingers[idx].current.y - processed->fingers[idx].last_gesture_point.y) * IQS_Y_DIR;
                 processed->fingers[idx].frame_move.x   = ((int32_t)data->fingers[idx].current.x - processed->fingers[idx].last.x) * IQS_X_DIR;
                 processed->fingers[idx].frame_move.y   = ((int32_t)data->fingers[idx].current.y - processed->fingers[idx].last.y) * IQS_Y_DIR;
-                processed->fingers[idx].frame_move.x = processed->fingers[idx].frame_move.x > MAX_FINGER_MOVEMENT ? MAX_FINGER_MOVEMENT : processed->fingers[idx].frame_move.x;
-                processed->fingers[idx].frame_move.y = processed->fingers[idx].frame_move.y > MAX_FINGER_MOVEMENT ? MAX_FINGER_MOVEMENT : processed->fingers[idx].frame_move.y;
-
                 processed->fingers[idx].last = data->fingers[idx].current;
 
                 processed->fingers[idx].rel.x = (data->fingers[idx].current.x - processed->fingers[idx].start.x) * IQS_X_DIR;
@@ -401,7 +397,7 @@ bool process_iqs5xx(iqs5xx_data_t const* const data, iqs5xx_processed_data_t* pr
         }
     }
 
-memset(rep_mouse, 0, sizeof(*rep_mouse));
+    memset(rep_mouse, 0, sizeof(*rep_mouse));
 
     // check buttons should be released
     if (processed->tap_cnt > 0) {
@@ -437,6 +433,8 @@ memset(rep_mouse, 0, sizeof(*rep_mouse));
                 send_flag = true;
             }
         }
+        rep_mouse->x = 0;
+        rep_mouse->y = 0;
     } else if (data->finger_cnt == 1) {
         // single finger move
 
@@ -461,6 +459,8 @@ memset(rep_mouse, 0, sizeof(*rep_mouse));
             processed->fingers[0].last_gesture_point = data->fingers[0].current;
             processed->fingers[1].last_gesture_point = data->fingers[1].current;
         }
+        rep_mouse->x = 0;
+        rep_mouse->y = 0;
     } else {
         gesture_data->two.gesture_state = GESTURE_NONE;
         gesture_data->two.dist_sq_init  = 0;
