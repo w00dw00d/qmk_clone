@@ -123,7 +123,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_TAB,   KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,     KC_UR07,
   KC_UR17,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,         KC_H,    KC_J,    KC_K,    KC_L,    KC_UR16,  KC_ENT,
   KC_LSFT,  KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,  KC_RSFT,
-  KC_ESC,                     KC_UR18, SP_LOWER,KC_SPC,       KC_BSPC, SP_RAISE,KC_UR19,                    KC_DEL
+  KC_ESC,                     SP_RAISE,SP_LOWER,KC_SPC,       KC_BSPC, KC_UR18,KC_UR19,                    KC_DEL
 ),
 [_LOWER] = LAYOUT(
   _______,  KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,         KC_UR12, _______, KC_UP,   KC_UR08, KC_UR09, _______,
@@ -132,8 +132,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______,                    _______, _______, _______,      SP_KANA, _______, _______,                   _______
 ),
 [_RAISE] = LAYOUT(
-  _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,        _______, _______, KC_UP,   _______, _______, _______,
-  _______,  KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,       SP_SPRW, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______ ,
+  _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,        _______, _______, KC_UR22,   _______, _______, _______,
+  _______,  KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,       SP_SPRW, KC_UR20, KC_UR23, KC_UR21, _______, _______ ,
   _______,  _______, _______, _______, KC_F11,  KC_F12,       _______, _______, _______, _______, _______, _______,
   SP_LLCK,                    _______, _______, _______,      _______, _______, _______,                   _______
 ),
@@ -229,6 +229,11 @@ void set_input_source(bool is_eisu) {
 }
 
 void set_layer(bool is_set, uint16_t keycode) {
+    if (is_layer_lock) {
+        set_sub2_color();
+        return;
+    }
+
     uint16_t layer = _QWERTY;
     switch (keycode) {
         case SP_LOWER:
@@ -352,7 +357,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             if (record -> event.pressed) {
                 if (current_target == TARGET_MAC) {
                     register_code(KC_LGUI);
-                    tap_code(KC_LEFT);
+                        tap_code(KC_LEFT);
                     unregister_code(KC_LGUI);
                 } else {
                     tap_code(KC_HOME);
@@ -370,6 +375,34 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
                     unregister_code(KC_LGUI);
                 } else {
                     tap_code(KC_END);
+                }
+            }
+            is_not_keypress = false;
+            return false;
+            break;
+
+        case KC_UR22:
+            if (record -> event.pressed) {
+                if (current_target == TARGET_MAC) {
+                    register_code(KC_LGUI);
+                    tap_code(KC_UP);
+                    unregister_code(KC_LGUI);
+                } else {
+                    tap_code(KC_PGUP);
+                }
+            }
+            is_not_keypress = false;
+            return false;
+            break;
+
+        case KC_UR23:
+            if (record -> event.pressed) {
+                if (current_target == TARGET_MAC) {
+                    register_code(KC_LGUI);
+                    tap_code(KC_DOWN);
+                    unregister_code(KC_LGUI);
+                } else {
+                    tap_code(KC_PGDN);
                 }
             }
             is_not_keypress = false;

@@ -33,6 +33,7 @@
 #define IQS5xx_SYSTEM_CTRL0 0x0431
 #define IQS5xx_SYSTEM_CTRL1 0x0432
 #define IQS5xx_FINGER_SPLIT 0x066B
+#define IQS5xx_STATIONARY_TOUCH 0x0672
 #define IQS5xx_DEFAULT_READ 0x0675
 
 #define I2C_TIMEOUT 1000
@@ -157,11 +158,20 @@ int init_iqs5xx(void) {
         if (res) return 0;
     }
 
-    data = 0x0D;
+    data = 0x0B;
     res = iqs_app_writeReg(IQS5xx_FINGER_SPLIT, &data, 1);
     if (res) {
         // retry once to avoid LP mode
         res = iqs_app_writeReg(IQS5xx_FINGER_SPLIT, &data, 1);
+
+        if (res) return 0;
+    }
+
+    data = 0x0F;
+    res = iqs_app_writeReg(IQS5xx_STATIONARY_TOUCH, &data, 1);
+    if (res) {
+        // retry once to avoid LP mode
+        res = iqs_app_writeReg(IQS5xx_STATIONARY_TOUCH, &data, 1);
 
         if (res) return 0;
     }
