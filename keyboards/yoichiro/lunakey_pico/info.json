@@ -15,8 +15,8 @@
         "audio": false
     },
     "matrix_pins": {
-        "cols": ["GP21", "GP20", "GP19", "GP18", "GP17", "GP16"],
-        "rows": ["GP12", "GP13", "GP14", "GP15"]
+        "cols": ["GP2", "GP4", "GP3", "GP2", "GP4", "GP3"],
+        "rows": ["GP26", "GP27", "GP28", "GP29"]
     },
     "debounce": 5,
     "processor": "RP2040",
@@ -26,8 +26,8 @@
         "vid": "0x5954"
     },
     "rgblight": {
-        "led_count": 12,
-        "pin": "GP6",
+        "led_count": 1,
+        "pin": "GP12",
         "sleep": true,
         "split": true,
         "split_count": [6, 6],

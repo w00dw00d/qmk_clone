@@ -13,9 +13,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include QMK_KEYBOARD_H
 
+#include QMK_KEYBOARD_H
 #include "keymap_jp.h"
+#include "ergotonic_f24.h"
 
 #ifdef CONSOLE_ENABLE
 #include <print.h>
@@ -34,8 +35,8 @@ enum layout {
 // Defines the keycodes used by our macros in process_record_user
 enum custom_keycodes {
     QWERTY = SAFE_RANGE,
-    SP_CUR,
-    SP_FUNC,
+    SP_LOWER,
+    SP_RAISE,
     SP_KANA,
     SP_EISU,
     SP_TO_MAC,
@@ -101,7 +102,7 @@ uint16_t conv_mod_map[3][3] = {
     ,{KC_UR19, KC_LCTL, KC_LALT} // control
 };
 
-//static bool is_not_keypress = false;
+static bool is_not_keypress = false;
 static uint16_t current_target = TARGET_MAC;
 static uint16_t current_layout = LAYOUT_JIS;
 static bool is_timer = false;
@@ -112,41 +113,55 @@ static uint16_t last_keycode = 0;
 
 // Defines names for use in layer keycodes and the keymap
 
-#define _QWERTY 0
-#define _CURSOR 1
-#define _FUNC 2
-#define _TENKEY 3
-// SP_CUR SP_LLCK KC_ESC KC_DEL KC_UR13, KC_UR12, KC_UR15, KC_DOT
+
+// Defines the keycodes used by our macros in process_record_user
+enum layer_names {
+    _QWERTY,
+    _LOWER,
+    _RAISE,
+    _ADJUST,
+    _TENKEY
+};
+
+// SP_RAISE,SP_LOWER,SP_EISU, KC_SPC,  KC_BSPC, SP_KANA, KC_UR18, KC_UR19
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                      KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,     KC_UR07,
-    KC_UR19, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,   KC_UR16,  KC_ENT,
-    _______, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_UR08, KC_UR09, KC_N,    KC_M,    KC_COMM, KC_DOT, KC_SLSH,  _______,
-    KC_ESC,                    KC_UR18, KC_UR17, KC_LSFT, KC_SPC,  KC_BSPC, SP_CUR,  SP_FUNC, KC_UR19,                   KC_DEL,
+    KC_UR17, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                      KC_H,    KC_J,    KC_K,    KC_L,   KC_UR16,  KC_ENT,
+    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_UR08, KC_UR09, KC_N,    KC_M,    KC_COMM, KC_DOT, KC_SLSH,  KC_RSFT,
+    KC_ESC,                    KC_UR18, SP_EISU, SP_LOWER,KC_SPC,  KC_BSPC, SP_RAISE,SP_KANA, KC_UR19,                   KC_DEL,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 
-    [_CURSOR] = LAYOUT(
-    _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      KC_UR12, _______, KC_UP,   KC_UR10, _______, KC_UR07,
-    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, KC_ENT ,
-    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  SP_SPRC, SP_SPRW, KC_UR13, KC_UR11, KC_UR14, _______, _______, _______,
-    _______,                   _______, _______, _______, SP_LANG, _______, _______, SP_LLCK, _______,                   _______,
-    XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
-    )    ,
-
-    [_FUNC] = LAYOUT(
-    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                   SP_TO_MAC,SP_TO_PC, _______, _______, _______, _______,
-    _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                  SP_TO_JIS,SP_TO_ANS,_______, _______, _______, _______,
-    _______, _______, _______, _______, KC_F11,  KC_F12,  SP_SPRC, SP_SPRW, _______, _______, _______, _______, _______, _______,
+    [_LOWER] = LAYOUT(
+    _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      KC_UR12, _______, KC_UP,   _______, _______, _______,
+    _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   KC_UR10, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______ ,
+    _______, _______, _______, KC_UR11, KC_UR14, KC_DOT,  _______, SP_SPRW, _______, _______, _______, _______, _______, _______,
     _______,                   _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
+    XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
+    )    ,
+
+    [_RAISE] = LAYOUT(
+    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                     _______, _______, KC_UR22, _______, _______, _______,
+    _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                    _______, KC_UR20, KC_UR23, KC_UR21, _______, _______,
+    _______, _______, _______, _______, KC_F11,  KC_F12,  _______, _______, _______, _______, _______, _______, _______, _______,
+    _______,                   _______, _______, _______, _______, _______, _______, _______, _______,                   _______,
+    XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
+    )    ,
+
+    [_ADJUST] = LAYOUT(
+    _______, _______, _______, _______, _______, _______,                  SP_TO_MAC,SP_TO_PC, _______, _______, _______, _______,
+    _______, _______, _______, _______, _______, _______,                  SP_TO_JIS,SP_TO_ANS,_______, _______, _______, _______,
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    _______,                   _______, _______, _______, _______, _______, _______, SP_LLCK, _______,                   _______,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 
     [_TENKEY] = LAYOUT(
     _______, KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,                      _______, _______, KC_UP,   _______, _______, _______,
     _______, KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,                   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
-    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  SP_SPRC, SP_SPRW, _______, _______, _______, _______, _______, _______,
-    _______,                   _______, _______, KC_LSFT, KC_BSPC, _______, _______, SP_LLCK, _______,                   _______,
+    _______, _______, KC_UR13, KC_UR12, KC_UR15, KC_DOT,  _______, SP_SPRW, _______, _______, _______, _______, _______, _______,
+    _______,                   _______, KC_UR13, KC_LSFT, KC_BSPC, _______, _______, SP_LLCK, _______,                   _______,
     XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX
     )    ,
 };
@@ -272,11 +287,11 @@ void set_input_source(bool is_eisu) {
 void set_layer(bool is_set, uint16_t keycode) {
     uint16_t layer = _QWERTY;
     switch (keycode) {
-        case SP_CUR:
-            layer = _CURSOR;
+        case SP_LOWER:
+            layer = _LOWER;
             break;
-        case SP_FUNC:
-            layer = _FUNC;
+        case SP_RAISE:
+            layer = _RAISE;
             break;
         case SP_LLCK:
             layer = _TENKEY;
@@ -304,6 +319,16 @@ void get_captcha(uint16_t keycode) {
     }
 }
 
+//https://github.com/qmk/qmk_firmware/blob/master/docs/feature_layers.md
+layer_state_t layer_state_set_user(layer_state_t state) {
+    // ADJUSTからのレイヤー変更だったら日本語入力ON
+    // if (layer_state_cmp(state, _ADJUST)) {
+    //     set_input_source(false);
+    // }
+    state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+    return state;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t * record) {
     bool is_double_tap = record -> event.pressed && last_keycode == keycode && TIMER_DIFF_16(record -> event.time, pressed_time) < TAPPING_TERM + 100;
     last_keycode = keycode;
@@ -314,6 +339,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             if (record -> event.pressed) {
                 get_captcha(keycode);
             }
+            is_not_keypress = false;
             break;
 
         case SP_LLCK:
@@ -323,8 +349,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             }
             break;
 
-        case SP_CUR:
-        case SP_FUNC:
+        case SP_LOWER:
+        case SP_RAISE:
             set_layer(record -> event.pressed, keycode);
             break;
 
@@ -346,6 +372,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             } else {
                 unregister_code(get_conv_mod_key(keycode));
             }
+            is_not_keypress = false;
             return false;
             break;
 
@@ -353,12 +380,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             if (record -> event.pressed) {
                 if (current_target == TARGET_MAC) {
                     register_code(KC_LGUI);
-                    tap_code(KC_LEFT);
+                        tap_code(KC_LEFT);
                     unregister_code(KC_LGUI);
                 } else {
                     tap_code(KC_HOME);
                 }
             }
+            is_not_keypress = false;
             return false;
             break;
 
@@ -372,6 +400,35 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
                     tap_code(KC_END);
                 }
             }
+            is_not_keypress = false;
+            return false;
+            break;
+
+        case KC_UR22:
+            if (record -> event.pressed) {
+                if (current_target == TARGET_MAC) {
+                    register_code(KC_LGUI);
+                    tap_code(KC_UP);
+                    unregister_code(KC_LGUI);
+                } else {
+                    tap_code(KC_PGUP);
+                }
+            }
+            is_not_keypress = false;
+            return false;
+            break;
+
+        case KC_UR23:
+            if (record -> event.pressed) {
+                if (current_target == TARGET_MAC) {
+                    register_code(KC_LGUI);
+                    tap_code(KC_DOWN);
+                    unregister_code(KC_LGUI);
+                } else {
+                    tap_code(KC_PGDN);
+                }
+            }
+            is_not_keypress = false;
             return false;
             break;
 
@@ -401,13 +458,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
 
         case SP_EISU:
             if (record -> event.pressed) {
-                set_input_source(true);
+                is_not_keypress = true;
+                register_code16(KC_LSHIFT);
+            } else {
+                unregister_code16(KC_LSHIFT);
+                if (is_not_keypress) {
+                    set_input_source(true);
+                }
             }
             break;
 
         case SP_KANA:
             if (record -> event.pressed) {
-                set_input_source(false);
+                is_not_keypress = true;
+                register_code16(KC_LSHIFT);
+            } else {
+                unregister_code16(KC_LSHIFT);
+                if (is_not_keypress) {
+                    set_input_source(false);
+                }
             }
             break;
 
@@ -428,7 +497,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             break;
 
         default:
-            // is_not_keypress = false;
+            is_not_keypress = false;
             break;
     }
     return true;

@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+// yokan44
 #include QMK_KEYBOARD_H
 #include "keymap_jp.h"
 #include "youkan44.h"
@@ -121,15 +122,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_QWERTY] = LAYOUT(
   KC_TAB,   KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,     KC_UR07,
-  KC_UR17,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,         KC_H,    KC_J,    KC_K,    KC_L,    KC_UR16,  KC_ENT,
+  KC_LGUI,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,         KC_H,    KC_J,    KC_K,    KC_L,    KC_UR16,  KC_ENT,
   KC_LSFT,  KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,  KC_RSFT,
-  KC_ESC,                     SP_RAISE,SP_LOWER,KC_SPC,       KC_BSPC, KC_UR18,KC_UR19,                    KC_DEL
+  KC_ESC,        MT(KC_UR18,KC_LANG2),SP_LOWER, LT(_LOWER,KC_SPC),        KC_BSPC, SP_RAISE,MT(KC_UR19,KC_LANG1),       KC_DEL
 ),
 [_LOWER] = LAYOUT(
   _______,  KC_1,    KC_UR01, KC_3,    KC_4,    KC_5,         KC_UR12, _______, KC_UP,   KC_UR08, KC_UR09, _______,
   _______,  KC_UR02, KC_UR03, KC_UR04, KC_UR05, KC_UR06,      KC_UR10, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______,
-  _______,  _______, _______, KC_UR11, KC_UR14, KC_DOT,       _______, _______, _______, _______, _______, _______,
-  _______,                    _______, _______, _______,      SP_KANA, _______, _______,                   _______
+  _______,  _______, _______, KC_UR11, KC_UR14, KC_DOT,       _______, SP_EISU, SP_KANA, _______, _______, _______,
+  _______,                    _______, _______, _______,      _______, _______, _______,                   _______
 ),
 [_RAISE] = LAYOUT(
   _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,        _______, _______, KC_UR22,   _______, _______, _______,
@@ -314,9 +315,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t * record) {
             is_rshift_press = record -> event.pressed;
             break;
         case SP_LOWER:
-            if (!record -> event.pressed && is_not_keypress) {
-                set_input_source(true);
-            }
+            // if (!record -> event.pressed && is_not_keypress) {
+            //     set_input_source(true);
+            // }
             is_lower_press = record -> event.pressed;
             is_not_keypress = record -> event.pressed;
             set_layer(record -> event.pressed, keycode);

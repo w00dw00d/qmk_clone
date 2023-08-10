@@ -118,11 +118,16 @@ static uint16_t l_sh_pressed_time = 0;
 //static uint16_t r_sh_pressed_time = 0;
 static bool current_is_pc = false;
 
-#define _QWERTY 0
-#define _LOWER 1
+enum layer_names {
+    _QWERTY,
+    _LOWER,
+    _RAISE,
+    _ADJUST
+};
 
 
 #define MO_LO MO(_LOWER)
+#define MO_RA MO(_RAISE)
 #define SC_CAPS S(KC_CAPS)
 
 // #define CL_PU C(KC_PGUP)
@@ -133,18 +138,32 @@ static bool current_is_pc = false;
 // #define MO_RA MO(_RAISE)
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_QWERTY] = LAYOUT(
-    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    JP_CIRC, \
+    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSLS, \
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    JP_MINS, \
     KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,  \
     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT, \
-    KC_APP,  KC_LGUI, KC_LALT,          SP_SF,   KC_SPC,  KC_BSPC, MO_LO,            KC_RALT, KC_RGUI, KC_DEL  \
+    KC_APP,  KC_LALT, KC_LNG2,          MO_LO,   KC_SPC,  KC_BSPC, MO_RA,            KC_LNG1, KC_RGUI, KC_DEL  \
   ),
   [_LOWER] = LAYOUT(
-    RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  \
-    KC_INS,  _______, _______, _______, KC_QUOT, _______, JP_LBRC, JP_RBRC, KC_UP,   _______, KC_F12,  KC_BSLS, \
-    _______, _______, _______, _______, KC_GRV, KC_BSLS,  JP_AT,   KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, KC_BSPC, \
-    _______, _______, _______, _______, KC_NUBS, SP_MW,   _______, _______, _______, _______, _______, _______, \
-    SC_CAPS, _______, _______,          SP_HK,   _______, _______, _______,          AT_TS,   DF_MC,   DF_PC    \
+    _______, _______, _______, _______, _______, _______, _______, _______, JP_LBRC, JP_RBRC, _______, JP_CIRC, \
+    _______, _______, _______, _______, _______, _______, KC_QUOT, _______, KC_UP,   _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, JP_AT,   KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, \
+    _______, _______, _______, _______, C(KC_LEFT), C(KC_RGHT), _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______,          _______, _______, _______, _______,          _______, _______, _______  \
+  ),
+  [_RAISE] = LAYOUT(
+    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_F11,  KC_F12,  _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______,          _______, _______, _______, _______,          _______, _______, _______  \
+  ),
+  [_ADJUST] = LAYOUT(
+    RESET,   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
+    _______, _______, _______,          _______, _______, _______, _______,          _______, _______, _______  \
   ),
 };
 
@@ -180,6 +199,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 void keyboard_post_init_user(void) {
 
+}
+
+//https://github.com/qmk/qmk_firmware/blob/master/docs/feature_layers.md
+layer_state_t layer_state_set_user(layer_state_t state) {
+    // ADJUSTからのレイヤー変更だったら日本語入力ON
+    // if (layer_state_cmp(state, _ADJUST)) {
+    //     set_input_source(false);
+    // }
+    state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+    return state;
 }
 
 uint16_t get_shifted_key(uint16_t keycode) {

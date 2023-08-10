@@ -84,7 +84,7 @@ AUTO_SHIFT_ENABLE = no
 
 POINTING_DEVICE_ENABLE = yes
 POINTING_DEVICE_DRIVER = custom
-SRC += mtch6102.c iqs5xx.c i2c_master.c
+# SRC += mtch6102.c iqs5xx.c i2c_master.c
 
 TP_TYPE = $(strip $(TP))
 ifeq ($(TP_TYPE), mtch6102)

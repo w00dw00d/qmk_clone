@@ -130,8 +130,8 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
         mouse_report.x = 0;
         mouse_report.y = 0;
     } else {
-        mouse_report.x = x_rev;
-        mouse_report.y = y_rev;
+        mouse_report.x = x_rev / 2;
+        mouse_report.y = y_rev / 2;
     }
 
     return pointing_device_task_user(mouse_report);
